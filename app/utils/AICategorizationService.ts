@@ -1,4 +1,5 @@
 import { Category } from "../../constants/Categories";
+import { RateLimiter, Sanitizer } from "./Security";
 
 const RAW_KEYS = process.env.EXPO_PUBLIC_GROQ_KEYS || "";
 const API_KEYS = RAW_KEYS.split(",").map((k: string) => k.trim()).filter((k: string) => k.length > 0);
@@ -28,16 +29,25 @@ export const AICategorizationService = {
     amount: number, 
     userCategories: Category[]
   ): Promise<string | null> {
+    try {
+      await RateLimiter.checkLimit("AI_REQUEST");
+    } catch (e: any) {
+      console.warn("AI Rate limit hit, skipping categorization:", e.message);
+      return "General";
+    }
+
     const apiKey = getActiveKey();
     if (!apiKey) return null;
 
+    const cleanDesc = Sanitizer.sanitizeInput(description);
+    const cleanAmount = Sanitizer.sanitizeAmount(amount);
     const categoryLabels = userCategories.map(c => c.label).join(", ");
     
     // ✅ REFINED PROMPT FOR SINGLE TRANSACTION
     const prompt = `
       You are a strict financial classifier.
       Categories: [${categoryLabels}]
-      Transaction: "${description}" (Amount: ${amount})
+      Transaction: "${cleanDesc}" (Amount: ${cleanAmount})
       
       RULES:
       1. **Name + Keyword**: If a name is followed by a business type (e.g., "Ravi Medicals", "Suresh Travels", "Priya Cafe"), categorize based on the business type (Medical -> Health/Medicine, Travels -> Transport).
@@ -98,8 +108,23 @@ export const AICategorizationService = {
 
     // --- LOOP THROUGH CHUNKS ---
     for (let i = 0; i < allTransactions.length; i += BATCH_SIZE) {
+        // Check rate limit per batch request
+        try {
+          await RateLimiter.checkLimit("AI_REQUEST");
+        } catch (e: any) {
+          console.warn("AI Rate limit hit during batch:", e.message);
+          // If limit hit, fill remaining with "General"
+          const remaining = allTransactions.length - finalResults.length;
+          finalResults = [...finalResults, ...Array(remaining).fill("General")];
+          break;
+        }
+
         const chunk = allTransactions.slice(i, i + BATCH_SIZE);
-        const txList = chunk.map((t, idx) => `${idx+1}. ${t.description} (${t.amount})`).join("\n");
+        const txList = chunk.map((t, idx) => {
+          const sDesc = Sanitizer.sanitizeInput(t.description);
+          const sAmt = Sanitizer.sanitizeAmount(t.amount);
+          return `${idx+1}. ${sDesc} (${sAmt})`;
+        }).join("\n");
 
         // ✅ REFINED BATCH PROMPT
         const prompt = `

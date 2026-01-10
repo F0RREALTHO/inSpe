@@ -37,6 +37,7 @@ import {
   type CategoryAlert,
   type MonthComparison,
 } from '../utils/InsightCalculations';
+import { ChatMessageSchema, RateLimiter, Sanitizer } from '../utils/Security';
 
 import Animated, {
   FadeInDown,
@@ -406,6 +407,7 @@ export default function InsightsScreen() {
     // 1. Fetch AI Summary
     let aiSummary = "Summary unavailable.";
     try {
+        await RateLimiter.checkLimit("AI_REQUEST");
         const currentKey = getActiveKey();
         if (currentKey) {
             const income = processedData.stats.income;
@@ -480,16 +482,33 @@ export default function InsightsScreen() {
         if (messages.length === 0) { newMessages = [systemMessage, { role: "user", content: "Give me a quick analysis." }]; setMessages([{ role: 'user', content: 'Analyzing your finances...' }]); } 
         else { const followUp: ChatMessage = { role: "user", content: "Re-analyze based on our conversation." }; newMessages.push(followUp); setMessages(prev => [...prev, followUp]); }
     } else {
-        if (!inputText.trim()) return;
-        const userMsg: ChatMessage = { role: "user", content: inputText }; newMessages.push(userMsg); setMessages(prev => [...prev, userMsg]); setInputText("");
+        const cleanedInput = Sanitizer.sanitizeInput(inputText);
+        if (!cleanedInput) return;
+
+        // Validate input schema
+        const valResult = ChatMessageSchema.safeParse({ role: 'user', content: cleanedInput });
+        if (!valResult.success) {
+             Alert.alert("Input Error", valResult.error.errors[0].message);
+             return;
+        }
+
+        const userMsg: ChatMessage = { role: "user", content: cleanedInput };
+        newMessages.push(userMsg);
+        setMessages(prev => [...prev, userMsg]);
+        setInputText("");
     }
     setAiLoading(true);
     try {
+        await RateLimiter.checkLimit("AI_REQUEST");
         const apiMessages = [systemMessage, ...newMessages.filter(m => m.role !== 'system')];
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", { method: "POST", headers: { "Authorization": `Bearer ${currentKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: apiMessages, max_tokens: 200 }) });
         const data = await response.json();
         if (data.choices && data.choices.length > 0) { const aiMsg: ChatMessage = { role: "assistant", content: data.choices[0].message.content }; setMessages(prev => [...prev, aiMsg]); } else { setMessages(prev => [...prev, { role: "assistant", content: "I'm having trouble thinking. Try again!" }]); }
-    } catch (e: any) { setMessages(prev => [...prev, { role: "assistant", content: "Connection error." }]); } finally { setAiLoading(false); }
+    } catch (e: any) {
+        let errorMsg = "Connection error.";
+        if (e.message && e.message.includes("chat too fast")) errorMsg = "🛑 You're chatting too fast! Give me a minute.";
+        setMessages(prev => [...prev, { role: "assistant", content: errorMsg }]);
+    } finally { setAiLoading(false); }
   };
 
   const handleContinueChat = () => { setIsChatCollapsed(false); setTimeout(() => { inputRef.current?.focus(); }, 300); };

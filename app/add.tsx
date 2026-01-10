@@ -36,6 +36,7 @@ import Animated, {
 import { AnimatedNumberDisplay } from "../components/AnimatedInput/AnimatedNumberDisplay";
 import { InputButton } from "../components/AnimatedInput/InputButton";
 import { NotificationService } from "./utils/NotificationService";
+import { RateLimiter, TransactionSchema } from "./utils/Security";
 
 const { width } = Dimensions.get("window");
 const KEY_WIDTH = (width - 48) / 3;
@@ -218,17 +219,35 @@ export default function AddTransactionScreen() {
   };
 
   // --- 🛑 BUDGET LOGIC ---
-  const checkBudgetAndSubmit = () => {
+  const checkBudgetAndSubmit = async () => {
     const rawAmount = parseFloat(getDisplayAmount().replace(/,/g, ''));
     
-    if (!inputVal || rawAmount === 0) {
-        showToast("Enter a valid amount", "error");
+    // Zod Validation
+    const valResult = TransactionSchema.safeParse({
+        amount: rawAmount,
+        description: note || "Manual Entry", // Default description if empty
+        category: selectedCategory?.label
+    });
+
+    if (!valResult.success) {
+        const errMsg = valResult.error.errors[0].message;
+        showToast(errMsg, "error");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         return;
     }
+
     if (!selectedCategory) {
         setCategoryError(true);
         showToast("Please select a category", "error");
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+    }
+
+    // Rate Check
+    try {
+        await RateLimiter.checkLimit("TRANSACTION_ADD");
+    } catch (e: any) {
+        showToast(e.message, "error");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         return;
     }

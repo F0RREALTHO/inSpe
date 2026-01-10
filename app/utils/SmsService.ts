@@ -5,6 +5,7 @@ import SmsAndroid from 'react-native-get-sms-android';
 import { auth, db } from '../../firebaseConfig';
 import { AICategorizationService } from './AICategorizationService';
 import { NotificationService } from './NotificationService';
+import { Sanitizer, SmsTransactionSchema } from './Security';
 import { isBankSms, parseSmsTransaction } from './smsParser';
 
 interface SmsMessage {
@@ -128,6 +129,19 @@ export const getUnprocessedSms = async (): Promise<SmsMessage[]> => {
 
     // Filter SMS from banks and after last check
     const bankSms = allSms.filter(sms => {
+      // Basic Sanity Check using Zod (optional but good for type safety)
+      const safeBody = Sanitizer.sanitizeInput(sms.body);
+      const safeAddress = Sanitizer.sanitizeInput(sms.address);
+
+      const isValid = SmsTransactionSchema.safeParse({
+        amount: 1, // Dummy, just checking structure
+        date: sms.date || Date.now(),
+        body: safeBody,
+        sender: safeAddress
+      }).success;
+
+      if (!isValid) return false;
+
       const smsDate = sms.date || sms.dateSent || 0;
       return isBankSms(sms) && smsDate > lastTimestamp;
     });

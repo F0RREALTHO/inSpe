@@ -5,6 +5,7 @@ import {
   Category 
 } from "../../constants/Categories";
 import { AICategorizationService } from "./AICategorizationService";
+import { RateLimiter } from "./Security";
 
 interface Transaction {
   date: string;
@@ -20,6 +21,9 @@ interface Transaction {
 
 export const processBankText = async (text: string, userCategories: any[]) => {
   console.log("--- STRICT PARSE STARTED ---");
+
+  // Rate Check: Max 1 PDF every 3 minutes
+  await RateLimiter.checkLimit("PDF_UPLOAD");
   
   const lines = text.split('\n');
   let rawTransactions: any[] = [];
