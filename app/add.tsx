@@ -106,8 +106,21 @@ export default function AddTransactionScreen() {
           .reduce((sum, t) => sum + Number(t.amount), 0);
   }, [transactions]);
 
-  // ✅ SAFE TO SPEND = MIN(actual_balance, budget_remaining)
-  const currentBalance = currentMonthIncome - currentMonthSpent;
+  // ✅ GLOBAL TOTAL (All time)
+  const totalAllTimeIncome = useMemo(() => {
+    return transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+  }, [transactions]);
+
+  const totalAllTimeSpent = useMemo(() => {
+    return transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+  }, [transactions]);
+
+  // ✅ SAFE TO SPEND logic needs Total Balance (All Time)
+  const currentBalance = totalAllTimeIncome - totalAllTimeSpent;
 
   const showToast = (msg: string, type: "success" | "error" | "info") => {
       setToast({ visible: true, message: msg, type });
@@ -361,46 +374,47 @@ export default function AddTransactionScreen() {
         
         // ✅ TRIGGER NOTIFICATION IF CONDITIONS MET
         if (type === 'expense' && notifPref === 'When I overspend') {
-            if (monthlyLimit > 0) {
-                // 🔧 FIX: Only trigger notification if the expense is from the current month
-                const transactionDate = new Date(date);
-                const now = new Date();
-                const isCurrentMonth = transactionDate.getMonth() === now.getMonth() && 
-                                       transactionDate.getFullYear() === now.getFullYear();
+            // 🔧 FIX: Only trigger notification if the expense is from the current month
+            const transactionDate = new Date(date);
+            const now = new Date();
+            const isCurrentMonth = transactionDate.getMonth() === now.getMonth() &&
+                                    transactionDate.getFullYear() === now.getFullYear();
+
+            if (isCurrentMonth) {
+                const newBalance = currentBalance - amount; // After this transaction (All Time)
+                const spentThisMonth = currentMonthSpent + amount;
+                const limitRemaining = monthlyLimit > 0 ? monthlyLimit - spentThisMonth : Infinity;
                 
-                if (isCurrentMonth) {
-                    const newBalance = currentBalance - amount; // After this transaction
-                    const limitRemaining = monthlyLimit - (currentMonthSpent + amount);
-                    
-                    // Safe to spend = MIN(actual balance, budget remaining)
-                    const safeToSpend = Math.min(newBalance, limitRemaining);
-                    
-                    // 🔧 FIX: Use customizable threshold from userData or default to 1000
-                    const notificationThreshold = userData?.notificationThreshold || 1000;
-                    
-                    console.log("📊 Overspend Check:", { 
-                        monthlyLimit, 
-                        currentBalance,
-                        spent: currentMonthSpent + amount,
-                        limitRemaining,
-                        newBalance,
-                        safeToSpend,
-                        threshold: notificationThreshold,
-                        isCurrentMonth
-                    });
-                    
-                    if (safeToSpend < notificationThreshold) {
-                        console.log("✅ Notification triggered: Safe to spend <", notificationThreshold);
-                        await NotificationService.triggerOverspendAlert(safeToSpend);
-                        showToast(`⚠️ Only ₹${Math.max(0, safeToSpend).toLocaleString('en-IN')} safe to spend!`, 'info');
-                    } else {
-                        console.log("ℹ️ Safe to spend >=", notificationThreshold, ": No alert (budget is healthy)");
-                    }
+                // Safe to spend = MIN(actual balance, budget remaining)
+                // If no budget limit, safeToSpend is just the balance
+                const safeToSpend = monthlyLimit > 0 ? Math.min(newBalance, limitRemaining) : newBalance;
+
+                // 🔧 FIX: Use customizable threshold from userData or default to 1000
+                const notificationThreshold = userData?.notificationThreshold || 1000;
+
+                console.log("📊 Overspend Check:", {
+                    monthlyLimit,
+                    currentBalance,
+                    spentThisMonth,
+                    limitRemaining,
+                    newBalance,
+                    safeToSpend,
+                    threshold: notificationThreshold,
+                    isCurrentMonth
+                });
+
+                // Condition: Only alert if (Monthly Limit > 0 AND Spent > Monthly Limit) OR (Total Balance < Threshold)
+                // But the user requested: "if 500 is left in safe to spend then notification from there onwards shld appear"
+                // So if safeToSpend < threshold, we alert.
+                if (safeToSpend < notificationThreshold) {
+                    console.log("✅ Notification triggered: Safe to spend <", notificationThreshold);
+                    await NotificationService.triggerOverspendAlert(safeToSpend);
+                    showToast(`⚠️ Only ₹${Math.max(0, safeToSpend).toLocaleString('en-IN')} safe to spend!`, 'info');
                 } else {
-                    console.log("ℹ️ Expense is from a past month - skipping notification");
+                    console.log("ℹ️ Safe to spend >=", notificationThreshold, ": No alert (budget is healthy)");
                 }
             } else {
-                console.log("⚠️ No monthly limit set - skipping overspend check");
+                console.log("ℹ️ Expense is from a past month - skipping notification");
             }
         }
 

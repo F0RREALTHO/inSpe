@@ -379,7 +379,7 @@ export default function InsightsScreen() {
         categories: Object.values(catMap).sort((a:any, b:any) => b.amount - a.amount),
         displayTxs: displayTxs
     };
-  }, [allTransactions, selectedBarId, range, chartType, selectedCategory]);
+  }, [allTransactions, selectedBarId, range, chartType, selectedCategory, selectedYear]);
 
   const groupedTransactions = useMemo(() => {
     const grouped: any = {};
@@ -512,7 +512,15 @@ export default function InsightsScreen() {
   };
 
   const handleContinueChat = () => { setIsChatCollapsed(false); setTimeout(() => { inputRef.current?.focus(); }, 300); };
-  const handleRangeSelect = (r: "week" | "month" | "year") => { setRange(r); setShowDropdown(false); setSelectedBarId(null); setSelectedCategory(null); setMessages([]); setIsChatCollapsed(false); };
+  const handleRangeSelect = (r: "week" | "month" | "year", year?: number) => {
+      setRange(r);
+      if (year) setSelectedYear(year);
+      setShowDropdown(false);
+      setSelectedBarId(null);
+      setSelectedCategory(null);
+      setMessages([]);
+      setIsChatCollapsed(false);
+  };
   const toggleChartType = (type: 'income' | 'expense') => { if (shouldAnimate) Haptics.selectionAsync(); if (chartType === type) setChartType(null); else setChartType(type); };
   const handleBarPress = (id: number) => { if (shouldAnimate) Haptics.selectionAsync(); if (selectedBarId === id) setSelectedBarId(null); else setSelectedBarId(id); };
   const handleCategoryPress = (cat: string) => { if (shouldAnimate) Haptics.selectionAsync(); if (selectedCategory === cat) setSelectedCategory(null); else setSelectedCategory(cat); };
@@ -587,7 +595,7 @@ export default function InsightsScreen() {
 
           <View>
             <TouchableOpacity style={[styles.rangeBtn, { backgroundColor: theme.card }]} onPress={() => setShowDropdown(true)}>
-                <Text style={[styles.rangeText, { color: theme.text }]}>{range}</Text>
+                <Text style={[styles.rangeText, { color: theme.text }]}>{range === 'year' ? selectedYear : range}</Text>
                 <Ionicons name="chevron-down" size={12} color={theme.muted} style={{marginLeft: 4}} />
             </TouchableOpacity>
             
@@ -599,6 +607,15 @@ export default function InsightsScreen() {
                                 <TouchableOpacity key={r} style={[styles.dropdownItem, range === r && { backgroundColor: theme.border }]} onPress={() => handleRangeSelect(r as any)}>
                                     <Text style={[styles.dropdownText, { color: theme.text }]}>{r}</Text>
                                     {range === r && <Ionicons name="checkmark" size={14} color={theme.text} />}
+                                </TouchableOpacity>
+                            ))}
+                            {/* Year Selector */}
+                            <View style={{height: 1, backgroundColor: theme.border, marginVertical: 4}} />
+                            <Text style={{fontSize: 10, color: theme.muted, marginLeft: 10, marginBottom: 4}}>PREVIOUS YEARS</Text>
+                            {[2024, 2025, 2026].filter(y => y <= new Date().getFullYear()).map(year => (
+                                <TouchableOpacity key={year} style={[styles.dropdownItem, range === 'year' && selectedYear === year && { backgroundColor: theme.border }]} onPress={() => handleRangeSelect('year', year)}>
+                                    <Text style={[styles.dropdownText, { color: theme.text }]}>{year}</Text>
+                                    {range === 'year' && selectedYear === year && <Ionicons name="checkmark" size={14} color={theme.text} />}
                                 </TouchableOpacity>
                             ))}
                         </View>
@@ -615,7 +632,7 @@ export default function InsightsScreen() {
             <View style={styles.statsRow}>
               <View>
                 <Text style={[styles.label, { color: theme.muted }]}>
-                    {selectedLabelText ? `SELECTED: ${selectedLabelText.toUpperCase()}` : (range === 'year' ? '2025' : range === 'month' ? 'DEC 2025' : 'THIS WEEK')}
+                    {selectedLabelText ? `SELECTED: ${selectedLabelText.toUpperCase()}` : (range === 'year' ? `${selectedYear}` : range === 'month' ? 'DEC 2025' : 'THIS WEEK')}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                   <Text style={[styles.bigAmount, { color: theme.text }]}>
