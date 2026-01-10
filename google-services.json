@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "585943328144",
+    "project_id": "inspend-b6350",
+    "storage_bucket": "inspend-b6350.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585943328144:android:f1dfa38e50d5747560bf15",
+        "android_client_info": {
+          "package_name": "com.InSpend.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "585943328144-0khfaau3psnla482fjbvoddr5bcd54sp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9RGsWdkunFHjiK9btM9aWW0Kv3U9YbRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "585943328144-0khfaau3psnla482fjbvoddr5bcd54sp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
