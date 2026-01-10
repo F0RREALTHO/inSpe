@@ -29,13 +29,6 @@ export const AICategorizationService = {
     amount: number, 
     userCategories: Category[]
   ): Promise<string | null> {
-    try {
-      await RateLimiter.checkLimit("AI_REQUEST");
-    } catch (e: any) {
-      console.warn("AI Rate limit hit, skipping categorization:", e.message);
-      return "General";
-    }
-
     const apiKey = getActiveKey();
     if (!apiKey) return null;
 
@@ -108,17 +101,6 @@ export const AICategorizationService = {
 
     // --- LOOP THROUGH CHUNKS ---
     for (let i = 0; i < allTransactions.length; i += BATCH_SIZE) {
-        // Check rate limit per batch request
-        try {
-          await RateLimiter.checkLimit("AI_REQUEST");
-        } catch (e: any) {
-          console.warn("AI Rate limit hit during batch:", e.message);
-          // If limit hit, fill remaining with "General"
-          const remaining = allTransactions.length - finalResults.length;
-          finalResults = [...finalResults, ...Array(remaining).fill("General")];
-          break;
-        }
-
         const chunk = allTransactions.slice(i, i + BATCH_SIZE);
         const txList = chunk.map((t, idx) => {
           const sDesc = Sanitizer.sanitizeInput(t.description);
