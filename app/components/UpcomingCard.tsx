@@ -6,14 +6,30 @@ export default function UpcomingCard({ item, theme, onConfirm }: any) {
   const calculateNextDate = () => {
     const originalDate = item.date ? new Date(item.date) : new Date();
     const now = new Date();
-    let nextDate = new Date();
+    now.setHours(0, 0, 0, 0); // Ignore time for comparison
+
+    let nextDate = new Date(originalDate);
+    nextDate.setHours(0, 0, 0, 0);
 
     if (item.recurring === 'daily') {
-      nextDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      // If original date is in past, start from tomorrow
+      if (nextDate <= now) {
+        nextDate = new Date(now);
+        nextDate.setDate(now.getDate() + 1);
+      }
     } else if (item.recurring === 'weekly') {
-      nextDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
+      // Find next occurrence of the same day of week
+      while (nextDate <= now) {
+        nextDate.setDate(nextDate.getDate() + 7);
+      }
     } else if (item.recurring === 'monthly') {
-      nextDate = new Date(now.getFullYear(), now.getMonth(), originalDate.getDate());
+      // Set to current month first
+      nextDate.setFullYear(now.getFullYear(), now.getMonth());
+
+      // If that date has passed or is today, move to next month
+      if (nextDate <= now) {
+        nextDate.setMonth(nextDate.getMonth() + 1);
+      }
     }
 
     return nextDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
