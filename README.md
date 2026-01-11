@@ -87,5 +87,5 @@ Built for performance and offline-first reliability.
 ---
 
 <p align="center">
-  <small>Built with ❤️ & ☕ by Kartik</small>
+  <small>Built with ❤️ & ☕ </small>
 </p>
