@@ -1,4 +1,3 @@
-// app/utils/formatCurrency.ts
 export function formatCurrency(value: number | string | null): string {
   if (value === null || value === undefined) return "";
   const s = typeof value === "number" ? String(value) : String(value);

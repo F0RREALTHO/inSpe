@@ -1,9 +1,8 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function UpcomingCard({ item, theme, onConfirm }: any) {
-  
+
   const calculateNextDate = () => {
     const originalDate = item.date ? new Date(item.date) : new Date();
     const now = new Date();
@@ -21,36 +20,32 @@ export default function UpcomingCard({ item, theme, onConfirm }: any) {
   };
 
   const nextOccurrence = calculateNextDate();
-  // Fallback to accent if no category color
   const catColor = item.category?.color || theme.accent || '#6b7280';
   const catEmoji = item.category?.emoji || '💰';
 
   return (
-    <TouchableOpacity 
-      style={styles.container} 
+    <TouchableOpacity
+      style={styles.container}
       onPress={() => onConfirm(item)}
       activeOpacity={0.6}
     >
       <View style={styles.row}>
-        {/* Glowing Icon Wrapper */}
-        <View 
-            style={[
-                styles.iconWrapper, 
-                { 
-                    borderColor: catColor, 
-                    backgroundColor: catColor + '15', // 15% opacity fill
-                    // ✅ Neon Glow
-                    shadowColor: catColor,
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 8,
-                    elevation: 4
-                }
-            ]}
+        <View
+          style={[
+            styles.iconWrapper,
+            {
+              borderColor: catColor,
+              backgroundColor: catColor + '15',
+              shadowColor: catColor,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.4,
+              shadowRadius: 8,
+              elevation: 4
+            }
+          ]}
         >
           <Text style={{ fontSize: 22 }}>{catEmoji}</Text>
-          
-          {/* Badge matches theme background */}
+
           <View style={[styles.reloadBadge, { backgroundColor: theme.card, borderColor: theme.bg }]}>
             <Ionicons name="refresh" size={10} color={theme.text} />
           </View>
@@ -60,7 +55,7 @@ export default function UpcomingCard({ item, theme, onConfirm }: any) {
           <Text style={[styles.label, { color: theme.text }]} numberOfLines={1}>
             {item.title || item.category?.label || 'Transaction'}
           </Text>
-          
+
           <View style={styles.subRow}>
             <Text style={[styles.dateText, { color: theme.muted }]}>
               {nextOccurrence}
@@ -88,18 +83,18 @@ export default function UpcomingCard({ item, theme, onConfirm }: any) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 14, // Slightly more breathing room
+    paddingVertical: 14,
     width: '100%',
-    opacity: 0.85, // increased opacity for better readability in dark mode
+    opacity: 0.85,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 48, 
+    width: 48,
     height: 48,
-    borderRadius: 16, // Softer corners
+    borderRadius: 16,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -114,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2, // Thicker border to separate from icon
+    borderWidth: 2,
   },
   details: {
     flex: 1,

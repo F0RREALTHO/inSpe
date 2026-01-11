@@ -14,11 +14,10 @@ export default function Skeleton({ width, height, borderRadius = 8, style }: Ske
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    // Infinite breathing animation
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
-          toValue: 0.8, // Slightly higher peak opacity for visibility
+          toValue: 0.8,
           duration: 1000,
           useNativeDriver: true,
         }),

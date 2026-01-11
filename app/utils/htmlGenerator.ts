@@ -1,46 +1,43 @@
 export const generateHTML = (
-    data: any, 
-    range: string, 
-    themeColor: string, 
-    userName: string, 
-    aiAdvice: string,
-    budgetData?: any
+  data: any,
+  range: string,
+  themeColor: string,
+  userName: string,
+  aiAdvice: string,
+  budgetData?: any
 ) => {
-    const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    // --- 1. CALCULATIONS ---
-    const monthlyBudget = budgetData?.monthlyLimit || 0;
-    const budgetRemaining = Math.max(0, monthlyBudget - data.stats.expense);
-    const budgetUtilization = monthlyBudget > 0 ? Math.round((data.stats.expense / monthlyBudget) * 100) : 0;
-    
-    const dailyAverage = budgetData?.dailyAverage || 0;
-    const daysLeft = budgetData?.daysLeftInMonth || 0;
-    const willExceed = budgetData?.willExceed || false;
-    const budgetStyle = budgetData?.budgetStyle || "Flexible";
-    
-    // --- 2. THEME CONFIG ---
-    const BG_COLOR = "#ffffff";
-    const TEXT_COLOR = "#1f2937";
-    const MUTED_COLOR = "#6b7280"; 
-    const BORDER_COLOR = "#e5e7eb";
-    const CARD_BG = "#f9fafb";
-    
-    const INCOME_COLOR = "#059669"; 
-    const EXPENSE_COLOR = "#dc2626"; 
-    const SAVING_COLOR = "#2563eb"; 
-    const WARNING_BG = "#fef2f2";
-    const WARNING_BORDER = "#fecaca";
-    const SUCCESS_BG = "#f0fdf4";
-    const SUCCESS_BORDER = "#86efac";
-    
-    // --- 3. GENERATE VISUALIZATIONS ---
-    const topCategories = data.categories.slice(0, 5);
-    const maxCategoryAmount = topCategories.length > 0 ? topCategories[0].amount : 1;
-    
-    const categoryBars = topCategories.map((cat: any) => {
-        const percentage = (cat.amount / maxCategoryAmount) * 100;
-        const barWidth = Math.max(percentage, 5);
-        return `
+  const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const monthlyBudget = budgetData?.monthlyLimit || 0;
+  const budgetRemaining = Math.max(0, monthlyBudget - data.stats.expense);
+  const budgetUtilization = monthlyBudget > 0 ? Math.round((data.stats.expense / monthlyBudget) * 100) : 0;
+
+  const dailyAverage = budgetData?.dailyAverage || 0;
+  const daysLeft = budgetData?.daysLeftInMonth || 0;
+  const willExceed = budgetData?.willExceed || false;
+  const budgetStyle = budgetData?.budgetStyle || "Flexible";
+
+  const BG_COLOR = "#ffffff";
+  const TEXT_COLOR = "#1f2937";
+  const MUTED_COLOR = "#6b7280";
+  const BORDER_COLOR = "#e5e7eb";
+  const CARD_BG = "#f9fafb";
+
+  const INCOME_COLOR = "#059669";
+  const EXPENSE_COLOR = "#dc2626";
+  const SAVING_COLOR = "#2563eb";
+  const WARNING_BG = "#fef2f2";
+  const WARNING_BORDER = "#fecaca";
+  const SUCCESS_BG = "#f0fdf4";
+  const SUCCESS_BORDER = "#86efac";
+
+  const topCategories = data.categories.slice(0, 5);
+  const maxCategoryAmount = topCategories.length > 0 ? topCategories[0].amount : 1;
+
+  const categoryBars = topCategories.map((cat: any) => {
+    const percentage = (cat.amount / maxCategoryAmount) * 100;
+    const barWidth = Math.max(percentage, 5);
+    return `
             <div style="margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                     <strong style="font-size: 13px; color: ${TEXT_COLOR};">${cat.label}</strong>
@@ -51,9 +48,9 @@ export const generateHTML = (
                 </div>
             </div>
         `;
-    }).join('');
-    
-    const txRows = data.displayTxs.slice(0, 50).map((t: any) => `
+  }).join('');
+
+  const txRows = data.displayTxs.slice(0, 50).map((t: any) => `
         <tr style="border-bottom: 1px solid ${BORDER_COLOR};">
             <td style="padding: 12px 8px; color: ${MUTED_COLOR}; font-size: 12px;">${new Date(t.date).toLocaleDateString()}</td>
             <td style="padding: 12px 8px;"><strong style="color: ${TEXT_COLOR}; font-size: 13px;">${t.category?.label || 'General'}</strong></td>
@@ -64,8 +61,7 @@ export const generateHTML = (
         </tr>
     `).join('');
 
-    // --- 4. HTML STRUCTURE ---
-    return `
+  return `
     <html>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />

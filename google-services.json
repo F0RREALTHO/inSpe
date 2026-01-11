@@ -14,6 +14,67 @@
       },
       "oauth_client": [
         {
+          "client_id": "585943328144-8h34a4uaffrdm69o4gu85bb73niln8de.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.InSpend.app",
+            "certificate_hash": "580c93d7aaa16f06a87d3b69e1ca6845a40d21fb"
+          }
+        },
+        {
+          "client_id": "585943328144-dk7lbmm06qjfd30ufl644mfodipa801a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.InSpend.app",
+            "certificate_hash": "f7521271eddbd673a1122d274c641f5d7dc057ff"
+          }
+        },
+        {
+          "client_id": "585943328144-0khfaau3psnla482fjbvoddr5bcd54sp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9RGsWdkunFHjiK9btM9aWW0Kv3U9YbRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "585943328144-0khfaau3psnla482fjbvoddr5bcd54sp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585943328144:android:fb69427eceaee19c60bf15",
+        "android_client_info": {
+          "package_name": "com.inspend.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "585943328144-71osgrr2spctksdgvbgnqm1uv9ljrgr4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inspend.app",
+            "certificate_hash": "87be79c76839e9081b03ed075dcf17a6911a2118"
+          }
+        },
+        {
+          "client_id": "585943328144-p9f16rm416a8jgkcti8nfhjf32fh9ojs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inspend.app",
+            "certificate_hash": "f7521271eddbd673a1122d274c641f5d7dc057ff"
+          }
+        },
+        {
           "client_id": "585943328144-0khfaau3psnla482fjbvoddr5bcd54sp.apps.googleusercontent.com",
           "client_type": 3
         }

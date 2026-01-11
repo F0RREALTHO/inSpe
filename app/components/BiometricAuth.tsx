@@ -12,19 +12,17 @@ export default function BiometricAuth({ onUnlock }: { onUnlock: () => void }) {
     (async () => {
       const compatible = await LocalAuthentication.hasHardwareAsync();
       setIsBiometricSupported(compatible);
-      // Auto-trigger on mount
-      authenticate(); 
+      authenticate();
     })();
   }, []);
 
   const authenticate = async () => {
     try {
       const hasRecords = await LocalAuthentication.isEnrolledAsync();
-      
+
       if (!hasRecords) {
-         // If no FaceID/Fingerprint is set up on the phone, just unlock
-         onUnlock(); 
-         return;
+        onUnlock();
+        return;
       }
 
       const result = await LocalAuthentication.authenticateAsync({
@@ -38,7 +36,6 @@ export default function BiometricAuth({ onUnlock }: { onUnlock: () => void }) {
       }
     } catch (error) {
       console.log(error);
-      // Don't alert on cancel, just let them tap the button to retry
     }
   };
 
@@ -48,14 +45,14 @@ export default function BiometricAuth({ onUnlock }: { onUnlock: () => void }) {
         <View style={[styles.iconBox, { backgroundColor: theme.card }]}>
           <Ionicons name={dark ? "lock-closed" : "lock-closed-outline"} size={48} color={theme.accent} />
         </View>
-        
+
         <Text style={[styles.title, { color: theme.text }]}>InSpend is Locked</Text>
         <Text style={[styles.subtitle, { color: theme.muted }]}>Authenticate to access your finances.</Text>
 
-        <TouchableOpacity 
-            style={[styles.btn, { backgroundColor: theme.accent }]} 
-            onPress={authenticate}
-            activeOpacity={0.8}
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: theme.accent }]}
+          onPress={authenticate}
+          activeOpacity={0.8}
         >
           <Ionicons name="finger-print-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.btnText}>Unlock</Text>

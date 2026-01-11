@@ -1,11 +1,10 @@
-// constants/Categories.ts
 
 export type Category = {
   id: string;
   emoji: string;
   label: string;
   color: string;
-  isCustom: boolean; 
+  isCustom: boolean;
 };
 
 export const DEFAULT_EXPENSE_CATEGORIES: Category[] = [

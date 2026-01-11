@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StyleSheet, Text, TextStyle } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -7,7 +8,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { Text, StyleSheet, TextStyle } from 'react-native';
 
 interface AnimatedSingleNumberProps {
   value: string;
@@ -29,8 +29,8 @@ export const AnimatedSingleNumber: React.FC<AnimatedSingleNumberProps> = ({ valu
   });
 
   return (
-    <Animated.View 
-      layout={LinearTransition.springify().damping(20).stiffness(200)} 
+    <Animated.View
+      layout={LinearTransition.springify().damping(20).stiffness(200)}
       entering={FadeIn.duration(100)}
       exiting={FadeOut.duration(100)}
       style={[styles.container]}

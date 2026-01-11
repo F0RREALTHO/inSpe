@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Dimensions, StyleSheet, Text, View } from 'react-native';
 
 const { width } = Dimensions.get("window");
 
@@ -35,22 +35,19 @@ export default function AnimatedTransaction({ tx, delay, theme }: any) {
         },
       ]}
     >
-      {/* ICON CIRCLE with Dynamic Color */}
       <View
         style={[
           styles.iconBox,
           {
-            // Hex color with 15% opacity (approx '26' in hex)
-            backgroundColor: (tx.color || theme.text) + '26', 
+            backgroundColor: (tx.color || theme.text) + '26',
           },
         ]}
       >
         <Text style={{ fontSize: 24 }}>
-            {tx.icon || "💰"}
+          {tx.icon || "💰"}
         </Text>
       </View>
 
-      {/* TEXT CONTENT */}
       <View style={styles.content}>
         <View style={styles.topRow}>
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>

@@ -1,10 +1,12 @@
-import React from 'react';
-import { 
-    View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform 
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
+import {
+    ActivityIndicator, Platform,
+    StyleSheet,
+    Text, TouchableOpacity,
+    View
+} from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const GOLD_COLOR = "#FFD700";
 
@@ -18,11 +20,11 @@ export const CreateReportButton = ({ onPress, loading }: Props) => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={() => {
                     Haptics.selectionAsync();
                     onPress();
-                }} 
+                }}
                 activeOpacity={0.8}
                 disabled={loading}
                 style={[styles.button, { backgroundColor: theme.card, shadowColor: "#000", borderColor: theme.border }]}
@@ -45,10 +47,9 @@ export const CreateReportButton = ({ onPress, loading }: Props) => {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        // ✅ FIXED: Increased from 25 to 100 to sit ABOVE the Tab Bar
-        bottom: Platform.OS === 'ios' ? 100 : 90, 
+        bottom: Platform.OS === 'ios' ? 100 : 90,
         alignSelf: 'center',
-        zIndex: 9999, 
+        zIndex: 9999,
         elevation: 10,
     },
     button: {

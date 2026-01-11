@@ -1,50 +1,91 @@
-# Welcome to your Expo app 👋
+# 💳 InSpend - Cyberpunk Finance Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> **"Your Money. Your Rules. Zero Friction."**
 
-## Get started
+InSpend is not just another expense tracker. It is a **Financial Defense System** built for the modern spender. Combining automated tracking, behavioral psychology, and a premium "Cyberpunk" aesthetic, InSpend helps you master your finances without the boring spreadsheets.
 
-1. Install dependencies
+![InSpend Banner](https://via.placeholder.com/1200x600?text=InSpend+App+Preview)
 
-   ```bash
-   npm install
-   ```
+## ⚡ Why InSpend? (The "Wow" Factor)
 
-2. Start the app
+Most finance apps are manual and boring. **InSpend is alive.**
 
-   ```bash
-   npx expo start
-   ```
+*   **🤖 Auto-Pilot Tracking**: Listens for transaction SMS (Android) in the background and instantly records expenses. No manual entry required.
+*   **📄 Intelligent PDF Parser**: Drop in your bank statement (PDF). We strip the junk, clean merchant names, and organize everything automatically.
+*   **🧠 AI-Powered Context**: Powered by **Groq (Llama-3)**, InSpend understands that "Ravi Medicos" is *Health*, not *General*. It learns your habits.
 
-In the output, you'll find options to open the app in a
+## 🛡️ Financial Defense System
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+We use behavioral psychology to stop you from going broke.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+*   **🔒 Impulse Control & Goal Locking**: Savings goals are **LOCKED** inside a vault. You cannot spend that money unless you strictly "Unlock" it (adding friction to impulse buys).
+*   **📉 Budget Rescue Engine**: Overspent in January? The deficit is *automatically deducted* from February's budget. You can't cheat the system.
+*   **👆 Biometric Fortress**: Integrated with FaceID / Fingerprint. The app creates a secure session that locks immediately when minimized.
 
-## Get a fresh project
+## 🎨 Premium "Obsidian" Experience
 
-When you're ready, run:
+Finance doesn't have to be ugly.
 
-```bash
-npm run reset-project
-```
+*   **Neon & Glassmorphism**: High-end UI with translucent cards and neon glows in our signature **Obsidian Dark Mode**.
+*   **Digital Daybreak**: A clean, sterile Apple-style Light Mode for the minimalists.
+*   **Haptic Engineering**: Feel your finances. Distinct haptic feedback for success, warnings, and limits.
+*   **Living UI**: Breathing skeletons, particle blasts on goal completion, and organic animations.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🛠️ The Tech Stack
 
-## Learn more
+Built for performance and offline-first reliability.
 
-To learn more about developing your project with Expo, look at the following resources:
+*   **Framework**: [React Native (Expo)](https://expo.dev) 
+*   **Language**: TypeScript
+*   **Backend / DB**: Firebase (Firestore, Auth)
+*   **AI Engine**: Groq API (Llama-3 70B)
+*   **State**: React Context + optimistic updates
+*   **Storage**: MMKV / AsyncStorage for instant load times
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 🚀 Getting Started
 
-## Join the community
+### Prerequisites
 
-Join our community of developers creating universal apps.
+*   Node.js (v18+)
+*   Expo CLI (`npm install -g expo-cli`)
+*   Android Studio / Xcode (for simulators)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Installation
+
+1.  **Clone the repo**
+    ```bash
+    git clone https://github.com/yourusername/inspend.git
+    cd inspend
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Configure Environment**
+    Create a `.env` file with your keys:
+    ```env
+    EXPO_PUBLIC_FIREBASE_API_KEY=your_key
+    EXPO_PUBLIC_GROQ_KEYS=your_groq_keys
+    ```
+
+4.  **Run the App**
+    ```bash
+    npx expo start
+    ```
+
+## 📱 Features at a Glance
+
+| Feature | Description |
+| :--- | :--- |
+| **Safe-to-Spend** | Calculates exact disposable income after bills & savings. |
+| **Rollover** | Unused budget rolls over to the next month. |
+| **Spending Profiles** | Adapts to **Impulsive**, **Balanced**, or **Planner** personalities. |
+| **Privacy First** | Data processing happens locally or via secure, ephemeral AI calls. |
+
+---
+
+<p align="center">
+  <small>Built with ❤️ & ☕ by Kartik</small>
+</p>

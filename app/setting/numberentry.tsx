@@ -4,20 +4,19 @@ import { useRouter } from "expo-router";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Dimensions,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Dimensions,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebaseConfig";
 import { useTheme } from "../context/ThemeContext";
 
-// Ensure these paths match your folder structure
 import { AnimatedNumberDisplay } from "../../components/AnimatedInput/AnimatedNumberDisplay";
 import { InputButton } from "../../components/AnimatedInput/InputButton";
 
@@ -52,8 +51,8 @@ export default function NumberEntrySettings() {
       if (!value) return "0.00";
       const num = parseInt(value, 10);
       return (num / 100).toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
       });
     } else {
       if (!value) return "0";
@@ -67,13 +66,13 @@ export default function NumberEntrySettings() {
     if (hapticStyle === "None") return;
 
     if (hapticStyle === "Excessive") {
-        if (type === 'number') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        else Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } 
+      if (type === 'number') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      else Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     else if (hapticStyle === "Subtle") {
-        if (type === 'action') {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+      if (type === 'action') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
     }
   };
 
@@ -84,12 +83,12 @@ export default function NumberEntrySettings() {
       return;
     }
     const currentDigits = value.replace('.', '');
-    if (currentDigits.length >= 8) return; 
-    
+    if (currentDigits.length >= 8) return;
+
     if (key === ".") {
       triggerHaptic('number');
-      if (activeType === "type1") return; 
-      if (value.includes(".")) return;    
+      if (activeType === "type1") return;
+      if (value.includes(".")) return;
       setValue((prev) => prev + ".");
       return;
     }
@@ -119,24 +118,23 @@ export default function NumberEntrySettings() {
 
   const renderGridItem = (label: string, val: string) => (
     <View style={styles.keyWrapper}>
-        <InputButton 
-            label={label}
-            onPress={() => handlePress(val)}
-            style={{ backgroundColor: theme.card }}
-            textStyle={{ color: theme.text }}
-        />
+      <InputButton
+        label={label}
+        onPress={() => handlePress(val)}
+        style={{ backgroundColor: theme.card }}
+        textStyle={{ color: theme.text }}
+      />
     </View>
   );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={[styles.backBtn, { backgroundColor: theme.card }]}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.backBtn, { backgroundColor: theme.card }]}
         >
-          {/* ✅ UPDATED: Use Accent color for back arrow */}
           <Ionicons name="chevron-back" size={24} color={theme.accent} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Number Entry Method</Text>
@@ -144,7 +142,7 @@ export default function NumberEntrySettings() {
       </View>
 
       <View style={styles.content}>
-        
+
         <View style={[styles.toggleContainer, { backgroundColor: theme.card }]}>
           <Pressable
             onPress={() => { setActiveType("type1"); setValue(""); }}
@@ -165,27 +163,27 @@ export default function NumberEntrySettings() {
             {activeType === "type1" ? '"Pre-dotted"' : '"Cent-less"'}
           </Text>
           <Text style={[styles.infoSub, { color: theme.muted }]}>
-            {activeType === "type1" 
-              ? "If you're too lazy to add a decimal point, I gotchu covered." 
+            {activeType === "type1"
+              ? "If you're too lazy to add a decimal point, I gotchu covered."
               : "If your transactions usually amount to whole numbers - this one is for you."}
           </Text>
         </View>
 
         <View style={styles.displayContainer}>
-            <Text style={[styles.currencySymbol, { color: theme.muted }]}>₹</Text>
-            
-            <View style={{ height: 80, justifyContent: 'center' }}>
-                <AnimatedNumberDisplay 
-                    value={getDisplayValue()} 
-                    style={[styles.amount, { color: theme.text }]}
-                />
-            </View>
-            
-            {value.length > 0 && (
-                <TouchableOpacity onPress={() => setValue("")} style={[styles.clearBtn, { backgroundColor: theme.card }]}>
-                    <Ionicons name="close" size={14} color={theme.text} />
-                </TouchableOpacity>
-            )}
+          <Text style={[styles.currencySymbol, { color: theme.muted }]}>₹</Text>
+
+          <View style={{ height: 80, justifyContent: 'center' }}>
+            <AnimatedNumberDisplay
+              value={getDisplayValue()}
+              style={[styles.amount, { color: theme.text }]}
+            />
+          </View>
+
+          {value.length > 0 && (
+            <TouchableOpacity onPress={() => setValue("")} style={[styles.clearBtn, { backgroundColor: theme.card }]}>
+              <Ionicons name="close" size={14} color={theme.text} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.keypad}>
@@ -206,27 +204,27 @@ export default function NumberEntrySettings() {
           </View>
           <View style={styles.row}>
             {activeType === "type1" ? (
-               <View style={styles.keyWrapper}>
-                   <InputButton 
-                       label="backspace"
-                       onPress={() => handlePress("backspace")}
-                       style={{ backgroundColor: theme.card }}
-                       textStyle={{ color: theme.text }}
-                   />
-               </View>
+              <View style={styles.keyWrapper}>
+                <InputButton
+                  label="backspace"
+                  onPress={() => handlePress("backspace")}
+                  style={{ backgroundColor: theme.card }}
+                  textStyle={{ color: theme.text }}
+                />
+              </View>
             ) : (
-               renderGridItem(".", ".")
+              renderGridItem(".", ".")
             )}
 
             {renderGridItem("0", "0")}
 
             <View style={styles.keyWrapper}>
-                <InputButton 
-                    label="check"
-                    onPress={handleSave}
-                    style={{ backgroundColor: theme.accent }}
-                    textStyle={{ color: '#fff' }}
-                />
+              <InputButton
+                label="check"
+                onPress={handleSave}
+                style={{ backgroundColor: theme.accent }}
+                textStyle={{ color: '#fff' }}
+              />
             </View>
           </View>
         </View>
@@ -248,20 +246,20 @@ const styles = StyleSheet.create({
   infoBox: { alignItems: "center", paddingHorizontal: 40, marginBottom: 20 },
   infoTitle: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
   infoSub: { textAlign: "center", fontSize: 14, lineHeight: 20 },
-  
-  displayContainer: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    marginBottom: 20, 
+
+  displayContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
     height: 100,
     width: '100%',
   },
   currencySymbol: { fontSize: 32, marginRight: 8, fontWeight: "600", paddingBottom: 10 },
   amount: { fontSize: 56, fontWeight: "400", fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto' },
-  
+
   clearBtn: { width: 24, height: 24, borderRadius: 12, justifyContent: "center", alignItems: "center", marginLeft: 15 },
-  
+
   keypad: { width: "100%", paddingHorizontal: 20, gap: 15 },
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
   keyWrapper: { width: KEY_SIZE, height: 75 },

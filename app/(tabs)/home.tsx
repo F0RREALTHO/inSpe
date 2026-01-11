@@ -177,7 +177,6 @@ export default function HomeScreen(): JSX.Element {
     if (!loading && auth.currentUser) checkRecurring();
   }, [upcoming, loading, displayTransactions]);
 
-  // ✅ CHECK BUDGET ROLLOVER ON APP LOAD
   useEffect(() => {
     const checkRollover = async () => {
       if (!userData || loading) return;
@@ -190,12 +189,10 @@ export default function HomeScreen(): JSX.Element {
     checkRollover();
   }, [userData, loading]);
 
-  // ✅ CHECK & SCHEDULE RECURRING REMINDERS
   useEffect(() => {
     const scheduleRecurringReminders = async () => {
       if (!transactions || transactions.length === 0 || loading) return;
 
-      // Check if user has recurring reminders enabled
       const user = auth.currentUser;
       if (!user) return;
 
@@ -203,9 +200,8 @@ export default function HomeScreen(): JSX.Element {
         const snap = await getDoc(doc(db, "users", user.uid));
         const recurringEnabled = snap.exists() && snap.data()?.recurringReminders === true;
 
-        if (!recurringEnabled) return; // Skip if disabled
+        if (!recurringEnabled) return;
 
-        // Get upcoming recurring transactions
         const upcoming = getUpcomingRecurringTransactions(transactions, 3);
 
         if (upcoming.length > 0) {
@@ -237,7 +233,6 @@ export default function HomeScreen(): JSX.Element {
     ]);
   };
 
-  // --- SMS SCANNING --
   const handleScanSms = async () => {
     if (Platform.OS !== 'android') {
       Alert.alert("Not Supported", "SMS scanning is only available on Android devices.");
@@ -253,14 +248,11 @@ export default function HomeScreen(): JSX.Element {
       const result = await syncSmsTransactions(userCategories);
 
       if (result.success > 0) {
-        Alert.alert("Success 🚀", `Added ${result.success} new transactions from SMS!`);
+        Alert.alert("Success 🚀", `Synced ${result.success} transactions from SMS!`);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         refreshData();
-      } else if (result.failed > 0) {
-        // Optional: Don't annoy user if just duplicates skipped, but warn if failures
-        if (result.success === 0) {
-          Alert.alert("Scan Complete", "No new transactions found.");
-        }
+      } else if ((result.failed || 0) + (result.skipped || 0) > 0) {
+        Alert.alert("Scan Complete", `No new transactions. (${result.skipped || 0} skipped, ${result.failed || 0} failed)`);
       } else {
         Alert.alert("Up to Date", "No new transactions found in your SMS.");
       }
@@ -276,7 +268,7 @@ export default function HomeScreen(): JSX.Element {
   const handlePasteProcess = async () => {
     if (!pasteText.trim()) return;
 
-    setIsUploading(true); // Reuse loading state to show spinner
+    setIsUploading(true);
     try {
       const userCategories = [...(userData?.categories || []), ...(userData?.incomeCategories || [])];
       const result = await processManualSms(pasteText, userCategories);
@@ -286,7 +278,7 @@ export default function HomeScreen(): JSX.Element {
       setPasteText("");
 
       if (result.success) {
-        refreshData(); // Refresh dashboard
+        refreshData();
         Alert.alert("Success", result.message);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
@@ -311,7 +303,6 @@ export default function HomeScreen(): JSX.Element {
 
         if (result.canceled || !result.assets) return;
 
-        // ✅ START LOADING: File selected, starting processing
         setIsUploading(true);
 
         const file = result.assets[0];
@@ -323,7 +314,6 @@ export default function HomeScreen(): JSX.Element {
 
         base64String = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
       } else {
-        // We have base64 (from password retry), so show loading again
         setIsUploading(true);
       }
 
@@ -347,7 +337,6 @@ export default function HomeScreen(): JSX.Element {
 
       if (!fnResult.success) {
         if (fnResult.error === "PASSWORD_REQUIRED") {
-          // 🛑 STOP LOADING: We need user input for the password
           setIsUploading(false);
 
           if (Platform.OS === 'ios') {
@@ -357,7 +346,6 @@ export default function HomeScreen(): JSX.Element {
               "secure-text"
             );
           } else {
-            // For Android, standard alert (can't do prompt easily without custom UI, keeping fallback)
             Alert.alert("Error", "PDF is password protected.");
           }
           return;
@@ -398,18 +386,15 @@ export default function HomeScreen(): JSX.Element {
           });
           await batch.commit();
 
-          // ✅ STOP LOADING: Success
           setIsUploading(false);
           Alert.alert("Success", `Processed ${extractedData.length} transactions!`);
           refreshData();
         } else {
-          // ✅ STOP LOADING: No data found
           setIsUploading(false);
           Alert.alert("Warning", "No transactions found.");
         }
       }
     } catch (e: any) {
-      // ✅ STOP LOADING: Error occurred
       setIsUploading(false);
       Alert.alert("Upload Failed", e.message);
     }
@@ -550,9 +535,7 @@ export default function HomeScreen(): JSX.Element {
           <SavingsWidget />
         </View>
 
-        {/* --- ACTION BUTTONS --- */}
         <View style={{ flexDirection: 'row', gap: 12, marginTop: 25 }}>
-          {/* PDF Upload */}
           <TouchableOpacity
             onPress={() => handlePdfUpload()}
             style={[styles.uploadBtn, { flex: 1, borderColor: theme.muted }]}
@@ -561,7 +544,6 @@ export default function HomeScreen(): JSX.Element {
             <Text style={{ color: theme.accent, fontWeight: "bold", marginLeft: 8 }}>PDF</Text>
           </TouchableOpacity>
 
-          {/* Android: Scan SMS */}
           {showSmsButton && (
             <TouchableOpacity
               onPress={handleScanSms}
@@ -579,7 +561,6 @@ export default function HomeScreen(): JSX.Element {
             </TouchableOpacity>
           )}
 
-          {/* Manual Test Paste */}
           <TouchableOpacity
             onPress={() => setShowPasteModal(true)}
             style={[styles.uploadBtn, { flex: 1, borderColor: theme.muted }]}
@@ -595,7 +576,6 @@ export default function HomeScreen(): JSX.Element {
           <View style={{ marginTop: 40 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
               <Text style={{ fontSize: 18, fontWeight: '800', color: theme.muted, letterSpacing: 0.5 }}>UPCOMING</Text>
-              {/* show net upcoming: income positive, expense negative */}
               {(() => {
                 const net = upcoming.reduce((acc: number, curr: any) => acc + (curr.type === 'expense' ? -Number(curr.amount) : Number(curr.amount)), 0);
                 const sign = net >= 0 ? '+' : '-';
@@ -631,7 +611,6 @@ export default function HomeScreen(): JSX.Element {
         )}
       </ScrollView>
 
-      {/* ✅ BUDGET ROLLOVER MODAL */}
       <Modal
         visible={showRolloverPrompt}
         transparent
@@ -685,7 +664,6 @@ export default function HomeScreen(): JSX.Element {
         </View>
       </Modal>
 
-      {/* ✅ PASTE SMS TEST MODAL */}
       <Modal visible={showPasteModal} transparent animationType="slide">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -693,7 +671,7 @@ export default function HomeScreen(): JSX.Element {
         >
           <View style={{ backgroundColor: theme.card, width: '90%', padding: 20, borderRadius: 20 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>Test SMS Parsing</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>SMS Parsing</Text>
               <TouchableOpacity onPress={() => setShowPasteModal(false)}>
                 <Ionicons name="close-circle" size={24} color={theme.muted} />
               </TouchableOpacity>
@@ -761,7 +739,6 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: "center", marginTop: 40, opacity: 0.7, zIndex: 2 },
   skeletonRow: { flexDirection: 'row', alignItems: 'center', padding: 16, marginBottom: 12, borderRadius: 20 },
 
-  // ✅ STYLES FOR LOADING OVERLAY
   loadingOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',

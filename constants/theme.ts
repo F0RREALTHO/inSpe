@@ -1,11 +1,9 @@
-/**
- * Updated to match the Obsidian Plum Theme 🟣
- */
+
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#3A1C71'; // Deep Purple
-const tintColorDark = '#D76D77';  // Neon Pink
+const tintColorLight = '#3A1C71';
+const tintColorDark = '#D76D77';
 
 export const Colors = {
   light: {
@@ -18,7 +16,7 @@ export const Colors = {
   },
   dark: {
     text: '#FFFFFF',
-    background: '#150C25', // ✅ Obsidian Dark BG
+    background: '#150C25',
     tint: tintColorDark,
     icon: '#9F8DA5',
     tabIconDefault: '#9F8DA5',

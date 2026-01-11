@@ -1,26 +1,26 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Slider from "@react-native-community/slider";
+import { useRouter } from "expo-router";
+import { doc, setDoc } from "firebase/firestore";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert,
   ActivityIndicator,
+  Alert,
   Animated,
   Easing,
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import Slider from "@react-native-community/slider";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
 import { useTheme } from "./context/ThemeContext";
 
 import { NotificationService } from "./utils/NotificationService";
@@ -189,15 +189,14 @@ export default function Onboarding(): JSX.Element {
 
       const finalThemePreference = ctxDark ? "dark" : "light";
 
-      // 🛠️ FIX: Field names matched to Profile Management
       const payload: any = {
         displayName: displayName.trim(),
         income,
         categories: selectedCategories,
         budgetStyle,
         monthlyLimit: finalDigits ? Number(finalDigits) : null,
-        notification: notification || "Never", 
-        insights: insights, 
+        notification: notification || "Never",
+        insights: insights,
         savingGoal: savingGoal === "Custom" ? customGoal.trim() : savingGoal,
         customGoal: savingGoal === "Custom" ? customGoal.trim() : "",
         personality,
@@ -272,9 +271,9 @@ export default function Onboarding(): JSX.Element {
                   <TouchableOpacity
                     key={c.id}
                     style={[
-                      styles.chip, 
-                      { 
-                        backgroundColor: active ? c.color + '20' : card, // subtle fill
+                      styles.chip,
+                      {
+                        backgroundColor: active ? c.color + '20' : card,
                         borderColor: active ? c.color : border,
                         borderWidth: active ? 2 : 1
                       }
@@ -433,35 +432,48 @@ export default function Onboarding(): JSX.Element {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]}>
-      
-      {/* 3. Floating Orbs (Obsidian Theme) */}
+
       <Animated.View style={[styles.orb, { backgroundColor: "#D76D77", opacity: 0.15, left: -160, top: -120 }, orbStyle(orbA, [-80, 40], [-40, 20], [0.92, 1.08], [0.35, 0.9])]} />
       <Animated.View style={[styles.orb, { backgroundColor: "#00F0FF", opacity: 0.15, right: -60, top: -60 }, orbStyle(orbB, [120, -80], [30, -50], [0.9, 1.18], [0.25, 0.85])]} />
-      
+
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <View style={styles.header}>
+          <Pressable
+            onPress={async () => {
+              try {
+                await auth.signOut();
+                router.replace("/");
+              } catch (e) {
+                console.log("Error signing out", e);
+              }
+            }}
+            style={({ pressed }) => [{ padding: 8, opacity: pressed ? 0.6 : 1 }]}
+          >
+            <Text style={{ color: theme.muted, fontSize: 16, fontWeight: "600" }}>Cancel</Text>
+          </Pressable>
+
           <Text style={[styles.title, { color: theme.text }]}>Welcome</Text>
-          <Pressable 
-            onPress={toggleTheme} 
+
+          <Pressable
+            onPress={toggleTheme}
             style={({ pressed }) => [{ padding: 8, opacity: pressed ? 0.8 : 1 }]}
           >
             <Text style={{ fontSize: 24 }}>{ctxDark ? "🌙" : "☀️"}</Text>
           </Pressable>
         </View>
 
-        {/* 2. Neon Progress Bar */}
         <View style={[styles.progressBar, { backgroundColor: theme.progressBg }]}>
-          <Animated.View 
+          <Animated.View
             style={[
-                styles.progressFill, 
-                { 
-                    backgroundColor: theme.accent, 
-                    width: progressWidth,
-                    shadowColor: theme.accent,
-                    shadowOpacity: 0.8,
-                    shadowRadius: 5
-                }
-            ]} 
+              styles.progressFill,
+              {
+                backgroundColor: theme.accent,
+                width: progressWidth,
+                shadowColor: theme.accent,
+                shadowOpacity: 0.8,
+                shadowRadius: 5
+              }
+            ]}
           />
         </View>
 
@@ -475,20 +487,20 @@ export default function Onboarding(): JSX.Element {
               <Ionicons name="arrow-back" size={20} color={theme.muted} />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-                onPress={next} 
-                style={[
-                    styles.primaryBtn, 
-                    { 
-                        backgroundColor: theme.accent, 
-                        shadowColor: theme.accent,
-                        shadowOpacity: 0.4,
-                        shadowRadius: 10,
-                        elevation: 5
-                    }
-                ]} 
-                activeOpacity={0.9} 
-                disabled={loading}
+            <TouchableOpacity
+              onPress={next}
+              style={[
+                styles.primaryBtn,
+                {
+                  backgroundColor: theme.accent,
+                  shadowColor: theme.accent,
+                  shadowOpacity: 0.4,
+                  shadowRadius: 10,
+                  elevation: 5
+                }
+              ]}
+              activeOpacity={0.9}
+              disabled={loading}
             >
               {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: "#fff", fontWeight: "900" }}>{step === 8 ? "Finish" : "Next"}</Text>}
             </TouchableOpacity>

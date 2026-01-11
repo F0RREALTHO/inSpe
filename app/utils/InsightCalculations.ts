@@ -1,9 +1,8 @@
-// Utility for computing detailed insights metrics
 
 export interface MonthComparison {
   currentMonth: { income: number; expense: number; net: number };
   lastMonth: { income: number; expense: number; net: number };
-  expenseChange: number; // percentage change
+  expenseChange: number;
   incomeChange: number;
   trend: 'up' | 'down' | 'same';
 }
@@ -40,7 +39,6 @@ export interface CategoryAlert {
   color: string;
 }
 
-// 1️⃣ MONTH OVER MONTH COMPARISON
 export const calculateMonthComparison = (transactions: any[]): MonthComparison => {
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -60,11 +58,11 @@ export const calculateMonthComparison = (transactions: any[]): MonthComparison =
   const currentStats = getStats(currentMonthTxs);
   const lastStats = getStats(lastMonthTxs);
 
-  const expenseChange = lastStats.expense > 0 
-    ? ((currentStats.expense - lastStats.expense) / lastStats.expense) * 100 
+  const expenseChange = lastStats.expense > 0
+    ? ((currentStats.expense - lastStats.expense) / lastStats.expense) * 100
     : 0;
-  const incomeChange = lastStats.income > 0 
-    ? ((currentStats.income - lastStats.income) / lastStats.income) * 100 
+  const incomeChange = lastStats.income > 0
+    ? ((currentStats.income - lastStats.income) / lastStats.income) * 100
     : 0;
 
   return {
@@ -76,7 +74,6 @@ export const calculateMonthComparison = (transactions: any[]): MonthComparison =
   };
 };
 
-// 2️⃣ BIGGEST EXPENSE
 export const getBiggestExpense = (transactions: any[]): BiggestExpense | null => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -86,7 +83,7 @@ export const getBiggestExpense = (transactions: any[]): BiggestExpense | null =>
 
   if (monthTxs.length === 0) return null;
 
-  const biggest = monthTxs.reduce((prev, current) => 
+  const biggest = monthTxs.reduce((prev, current) =>
     Number(current.amount) > Number(prev.amount) ? current : prev
   );
 
@@ -102,7 +99,6 @@ export const getBiggestExpense = (transactions: any[]): BiggestExpense | null =>
   };
 };
 
-// 3️⃣ BEST SAVING DAY
 export const getBestSavingDay = (transactions: any[]): BestSavingDay | null => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -132,7 +128,6 @@ export const getBestSavingDay = (transactions: any[]): BestSavingDay | null => {
   };
 };
 
-// 4️⃣ BURN RATE PREDICTION (AI ONLY)
 export const calculateBurnRate = (
   transactions: any[],
   monthlyLimit: number
@@ -165,7 +160,6 @@ export const calculateBurnRate = (
   };
 };
 
-// 5️⃣ CATEGORY ALERTS (AI ONLY)
 export const getCategoryAlerts = (
   transactions: any[],
   categoryBudgets?: Record<string, number>
@@ -200,7 +194,6 @@ export const getCategoryAlerts = (
     const budget = categoryBudgets?.[cat] || 0;
     const color = currentMonthTxs.find(t => t.category?.label === cat)?.category?.color || '#888';
 
-    // Alert 1: Significant increase
     if (lastMonthSpent > 0) {
       const changePercent = ((spent - lastMonthSpent) / lastMonthSpent) * 100;
       if (changePercent > 20) {
@@ -214,7 +207,6 @@ export const getCategoryAlerts = (
       }
     }
 
-    // Alert 2: Highest spending category
     const maxSpending = Math.max(...Object.values(currentCats));
     if (maxSpending === spent && spent > 2000) {
       alerts.push({
@@ -226,7 +218,6 @@ export const getCategoryAlerts = (
       });
     }
 
-    // Alert 3: Unusual/first time high spend
     if (lastMonthSpent === 0 && spent > 3000) {
       alerts.push({
         category: cat,
@@ -238,5 +229,5 @@ export const getCategoryAlerts = (
     }
   });
 
-  return alerts.slice(0, 3); // Top 3 alerts
+  return alerts.slice(0, 3);
 };

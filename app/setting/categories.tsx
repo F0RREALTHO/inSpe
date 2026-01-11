@@ -3,34 +3,32 @@ import { useLocalSearchParams, useRouter } from "expo-router"; // ✅ Added useL
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    LayoutAnimation,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  LayoutAnimation,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebaseConfig";
 import { useTheme } from "../context/ThemeContext";
 
-/* --- TYPES --- */
 type Category = {
   id: string;
   emoji: string;
   label: string;
   color: string;
-  isCustom: boolean; 
+  isCustom: boolean;
 };
 
-/* --- COLORS --- */
 const COLORS = [
   "#3b82f6", "#8b5cf6", "#d946ef", "#ec4899", "#f43f5e",
   "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16",
@@ -38,7 +36,6 @@ const COLORS = [
   "#6366f1", "#64748b", "#78716c", "#a8a29e", "#d6d3d1"
 ];
 
-/* --- DEFAULTS --- */
 const ALL_SYSTEM_EXPENSES: Category[] = [
   { id: '1', emoji: '🍔', label: 'Food', color: '#3b82f6', isCustom: false },
   { id: '2', emoji: '🚆', label: 'Transport', color: '#64748b', isCustom: false },
@@ -71,12 +68,10 @@ export default function CategoriesScreen() {
   const { initialTab } = useLocalSearchParams(); // ✅ Get param
   const [loading, setLoading] = useState(true);
 
-  // --- STATE ---
-  // ✅ Initialize based on param (expense or income)
   const [tab, setTab] = useState<'expense' | 'income'>((initialTab as 'expense' | 'income') || 'expense');
-  
+
   const [exActive, setExActive] = useState<Category[]>([]);
-  const [exSugg, setExSugg] = useState<Category[]>(ALL_SYSTEM_EXPENSES); 
+  const [exSugg, setExSugg] = useState<Category[]>(ALL_SYSTEM_EXPENSES);
   const [inActive, setInActive] = useState<Category[]>([]);
   const [inSugg, setInSugg] = useState<Category[]>(INCOME_SUGGESTED);
 
@@ -98,8 +93,8 @@ export default function CategoriesScreen() {
       try {
         const user = auth.currentUser;
         if (!user) {
-            setLoading(false);
-            return;
+          setLoading(false);
+          return;
         }
 
         const docRef = doc(db, "users", user.uid);
@@ -107,8 +102,7 @@ export default function CategoriesScreen() {
 
         if (snap.exists() && mounted) {
           const data = snap.data();
-          
-          // 1. Load Active Expense Categories
+
           const savedEx = data.categories || [];
           const exOnboarded: Category[] = savedEx.map((item: any, index: number) => {
             if (typeof item === 'string') {
@@ -118,17 +112,15 @@ export default function CategoriesScreen() {
             return item;
           });
 
-          // 2. Load Active Income Categories
           const savedIn = data.incomeCategories || [];
           const inOnboarded: Category[] = savedIn.map((item: any, index: number) => {
-             if (typeof item === 'string') {
-                 const sysMatch = INCOME_SUGGESTED.find(s => s.label === item);
-                 return sysMatch || { id: `legacy-in-${index}`, label: item, emoji: '💰', color: '#888', isCustom: true };
-             }
-             return item;
+            if (typeof item === 'string') {
+              const sysMatch = INCOME_SUGGESTED.find(s => s.label === item);
+              return sysMatch || { id: `legacy-in-${index}`, label: item, emoji: '💰', color: '#888', isCustom: true };
+            }
+            return item;
           });
 
-          // 3. Filter Suggestions
           const activeExIds = new Set(exOnboarded.map(c => c.id));
           const remainingExSugg = ALL_SYSTEM_EXPENSES.filter(c => !activeExIds.has(c.id));
 
@@ -137,7 +129,7 @@ export default function CategoriesScreen() {
 
           setExActive(exOnboarded);
           setExSugg(remainingExSugg);
-          
+
           setInActive(inOnboarded);
           setInSugg(remainingInSugg);
         }
@@ -157,14 +149,13 @@ export default function CategoriesScreen() {
       if (!user) return;
       await updateDoc(doc(db, "users", user.uid), {
         categories: newExActive,
-        incomeCategories: newInActive 
+        incomeCategories: newInActive
       });
     } catch (e) {
       console.error("Sync error", e);
     }
   };
 
-  // --- HELPERS ---
   const activeList = tab === 'expense' ? exActive : inActive;
   const suggestedList = tab === 'expense' ? exSugg : inSugg;
 
@@ -172,14 +163,14 @@ export default function CategoriesScreen() {
     if (tab === 'expense') {
       const newExActive = [...exActive, item];
       const newExSugg = exSugg.filter(i => i.id !== item.id);
-      
+
       setExActive(newExActive);
       setExSugg(newExSugg);
       saveToFirestore(newExActive, inActive);
     } else {
       const newInActive = [...inActive, item];
       const newInSugg = inSugg.filter(i => i.id !== item.id);
-      
+
       setInActive(newInActive);
       setInSugg(newInSugg);
       saveToFirestore(exActive, newInActive);
@@ -195,23 +186,22 @@ export default function CategoriesScreen() {
   const toggleSuggestions = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     if (suggestionsVisible) {
-        setSuggestionsVisible(false);
-        setBannerVisible(true);
-        setTimeout(() => {
-            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-            setBannerVisible(false);
-        }, 5000);
-    } else {
-        setSuggestionsVisible(true);
+      setSuggestionsVisible(false);
+      setBannerVisible(true);
+      setTimeout(() => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setBannerVisible(false);
+      }, 5000);
+    } else {
+      setSuggestionsVisible(true);
+      setBannerVisible(false);
     }
   };
 
-  // --- ACTIONS ---
   const handleOpenNew = () => {
     setIsCreating(true);
     setEditingId(null);
-    setTargetType(tab); 
+    setTargetType(tab);
     setTempName("");
     setTempEmoji("✨");
     setTempColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
@@ -221,7 +211,7 @@ export default function CategoriesScreen() {
   const handleOpenEdit = (item: Category) => {
     setIsCreating(false);
     setEditingId(item.id);
-    setTargetType(tab); 
+    setTargetType(tab);
     setTempName(item.label);
     setTempEmoji(item.emoji);
     setTempColor(item.color);
@@ -233,7 +223,7 @@ export default function CategoriesScreen() {
 
     const newItem: Category = {
       id: isCreating ? Date.now().toString() : editingId!,
-      emoji: tempEmoji || "📁", 
+      emoji: tempEmoji || "📁",
       label: tempName,
       color: tempColor,
       isCustom: isCreating ? true : (activeList.find(i => i.id === editingId)?.isCustom ?? false)
@@ -251,10 +241,10 @@ export default function CategoriesScreen() {
       else newIn = newIn.map(i => i.id === newItem.id ? newItem : i);
       setInActive(newIn);
     }
-    
-    if(isCreating && targetType !== tab) setTab(targetType);
+
+    if (isCreating && targetType !== tab) setTab(targetType);
     setModalVisible(false);
-    
+
     saveToFirestore(newEx, newIn);
   };
 
@@ -275,7 +265,7 @@ export default function CategoriesScreen() {
         setInActive(newIn);
         if (!itemToDelete.isCustom) setInSugg(prev => [itemToDelete, ...prev]);
       }
-      
+
       setModalVisible(false);
       saveToFirestore(newEx, newIn);
     };
@@ -292,20 +282,20 @@ export default function CategoriesScreen() {
 
   if (loading) {
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.bg, justifyContent: 'center', alignItems: 'center' }]}>
-            <ActivityIndicator size="large" color={theme.accent} />
-        </SafeAreaView>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.bg, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.accent} />
+      </SafeAreaView>
     )
   }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
-            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-            onPress={() => router.back()} 
-            style={[styles.roundBtn, { backgroundColor: theme.card }]}
+        <TouchableOpacity
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPress={() => router.back()}
+          style={[styles.roundBtn, { backgroundColor: theme.card }]}
         >
           <Ionicons name="chevron-back" size={24} color={theme.text} />
         </TouchableOpacity>
@@ -316,16 +306,16 @@ export default function CategoriesScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}>
-        
+
         {!suggestionsVisible && bannerVisible && (
-            <View style={styles.hiddenBanner}>
-                <Ionicons name="eye-off-outline" size={16} color="#065f46" style={{ marginRight: 6 }} />
-                <Text style={styles.hiddenBannerText}>Suggestions Hidden</Text>
-            </View>
+          <View style={styles.hiddenBanner}>
+            <Ionicons name="eye-off-outline" size={16} color="#065f46" style={{ marginRight: 6 }} />
+            <Text style={styles.hiddenBannerText}>Suggestions Hidden</Text>
+          </View>
         )}
 
         <Text style={styles.sectionLabel}>{tab.toUpperCase()} CATEGORIES</Text>
-        
+
         {activeList.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: theme.card }]}>
             <Ionicons name="file-tray-outline" size={40} color={theme.muted} style={{ opacity: 0.5, marginBottom: 10 }} />
@@ -336,10 +326,10 @@ export default function CategoriesScreen() {
         ) : (
           <View style={[styles.card, { backgroundColor: theme.card }]}>
             {activeList.map((item) => (
-              <Pressable 
-                key={item.id} 
+              <Pressable
+                key={item.id}
                 style={({ pressed }) => [
-                  styles.row, 
+                  styles.row,
                   { borderBottomWidth: 1, borderBottomColor: theme.bg },
                   pressed && { backgroundColor: theme.cardLight }
                 ]}
@@ -356,46 +346,46 @@ export default function CategoriesScreen() {
         )}
 
         {suggestionsVisible && (
-            <>
-                <Text style={[styles.sectionLabel, { marginTop: 30 }]}>SUGGESTED</Text>
-                <View style={[styles.card, { backgroundColor: theme.card }]}>
-                {suggestedList.length > 0 ? (
-                    suggestedList.map((item) => (
-                        <Pressable 
-                        key={item.id}
-                        style={({ pressed }) => [
-                            styles.row, 
-                            { borderBottomWidth: 1, borderBottomColor: theme.bg },
-                            pressed && { backgroundColor: theme.cardLight }
-                        ]}
-                        onPress={() => addSuggested(item)}
-                        >
-                        <View style={styles.rowLeft}>
-                            <Text style={styles.emoji}>{item.emoji}</Text>
-                            <Text style={[styles.rowText, { color: theme.text }]}>{item.label}</Text>
-                        </View>
-                        <View style={[styles.addBtn, { backgroundColor: theme.bg }]}>
-                            <Ionicons name="add" size={18} color={theme.muted} />
-                        </View>
-                        </Pressable>
-                    ))
-                ) : (
-                    <Text style={{ padding: 20, textAlign: 'center', color: theme.muted }}>All suggestions added!</Text>
-                )}
-                </View>
-            </>
+          <>
+            <Text style={[styles.sectionLabel, { marginTop: 30 }]}>SUGGESTED</Text>
+            <View style={[styles.card, { backgroundColor: theme.card }]}>
+              {suggestedList.length > 0 ? (
+                suggestedList.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    style={({ pressed }) => [
+                      styles.row,
+                      { borderBottomWidth: 1, borderBottomColor: theme.bg },
+                      pressed && { backgroundColor: theme.cardLight }
+                    ]}
+                    onPress={() => addSuggested(item)}
+                  >
+                    <View style={styles.rowLeft}>
+                      <Text style={styles.emoji}>{item.emoji}</Text>
+                      <Text style={[styles.rowText, { color: theme.text }]}>{item.label}</Text>
+                    </View>
+                    <View style={[styles.addBtn, { backgroundColor: theme.bg }]}>
+                      <Ionicons name="add" size={18} color={theme.muted} />
+                    </View>
+                  </Pressable>
+                ))
+              ) : (
+                <Text style={{ padding: 20, textAlign: 'center', color: theme.muted }}>All suggestions added!</Text>
+              )}
+            </View>
+          </>
         )}
       </ScrollView>
 
       <View style={styles.bottomBar}>
         <View style={[styles.togglePill, { backgroundColor: dark ? '#1e1e1e' : '#e5e7eb' }]}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.toggleBtn, tab === 'expense' && { backgroundColor: theme.card }]}
             onPress={() => setTab('expense')}
           >
             <Text style={[styles.toggleText, { color: tab === 'expense' ? theme.text : theme.muted }]}>Expense</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.toggleBtn, tab === 'income' && { backgroundColor: theme.card }]}
             onPress={() => setTab('income')}
           >
@@ -415,30 +405,30 @@ export default function CategoriesScreen() {
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.roundBtnDark}>
               <Ionicons name="close" size={20} color="#fff" />
             </TouchableOpacity>
-            
+
             {isCreating ? (
-                <View style={[styles.miniTogglePill, { backgroundColor: '#333' }]}>
-                    <TouchableOpacity 
-                        style={[styles.miniToggleBtn, targetType === 'expense' && { backgroundColor: '#555' }]}
-                        onPress={() => setTargetType('expense')}
-                    >
-                        <Text style={{color: '#fff', fontSize: 13, fontWeight: '700'}}>Expense</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.miniToggleBtn, targetType === 'income' && { backgroundColor: '#555' }]}
-                        onPress={() => setTargetType('income')}
-                    >
-                        <Text style={{color: '#fff', fontSize: 13, fontWeight: '700'}}>Income</Text>
-                    </TouchableOpacity>
-                </View>
+              <View style={[styles.miniTogglePill, { backgroundColor: '#333' }]}>
+                <TouchableOpacity
+                  style={[styles.miniToggleBtn, targetType === 'expense' && { backgroundColor: '#555' }]}
+                  onPress={() => setTargetType('expense')}
+                >
+                  <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Expense</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.miniToggleBtn, targetType === 'income' && { backgroundColor: '#555' }]}
+                  onPress={() => setTargetType('income')}
+                >
+                  <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Income</Text>
+                </TouchableOpacity>
+              </View>
             ) : (
-                <Text style={styles.modalTitle}>Edit {tab === 'expense' ? 'Expense' : 'Income'}</Text>
+              <Text style={styles.modalTitle}>Edit {tab === 'expense' ? 'Expense' : 'Income'}</Text>
             )}
-            
-            <TouchableOpacity 
-                onPress={handleDelete} 
-                style={[styles.roundBtnDark, { backgroundColor: isCreating ? 'transparent' : '#ef444433' }]}
-                disabled={isCreating}
+
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={[styles.roundBtnDark, { backgroundColor: isCreating ? 'transparent' : '#ef444433' }]}
+              disabled={isCreating}
             >
               {!isCreating && <Ionicons name="trash" size={20} color="#ef4444" />}
             </TouchableOpacity>
@@ -446,13 +436,13 @@ export default function CategoriesScreen() {
 
           <ScrollView contentContainerStyle={{ padding: 20, alignItems: 'center' }}>
             <View style={[styles.previewIcon, { backgroundColor: '#1e1e1e' }]}>
-                <Text style={{fontSize: 50}}>{tempEmoji}</Text>
+              <Text style={{ fontSize: 50 }}>{tempEmoji}</Text>
             </View>
 
             <View style={styles.colorGrid}>
               {COLORS.map(c => (
-                <TouchableOpacity 
-                  key={c} 
+                <TouchableOpacity
+                  key={c}
                   style={[styles.colorCell, { backgroundColor: c }, tempColor === c && styles.colorCellActive]}
                   onPress={() => setTempColor(c)}
                 >
@@ -463,7 +453,7 @@ export default function CategoriesScreen() {
 
             <View style={styles.inputRow}>
               <View style={[styles.miniColorBox, { backgroundColor: tempColor }]} />
-              <TextInput 
+              <TextInput
                 style={styles.input}
                 value={tempName}
                 onChangeText={setTempName}
@@ -477,13 +467,13 @@ export default function CategoriesScreen() {
             </View>
 
             <View style={styles.emojiInputRow}>
-                <TextInput 
-                    style={styles.emojiInput}
-                    value={tempEmoji}
-                    onChangeText={handleEmojiChange}
-                    maxLength={2} 
-                />
-                <Text style={{color: '#666', fontSize: 12}}>Edit Emoji</Text>
+              <TextInput
+                style={styles.emojiInput}
+                value={tempEmoji}
+                onChangeText={handleEmojiChange}
+                maxLength={2}
+              />
+              <Text style={{ color: '#666', fontSize: 12 }}>Edit Emoji</Text>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -499,17 +489,17 @@ const styles = StyleSheet.create({
   roundBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
 
   sectionLabel: { fontSize: 12, fontWeight: '700', color: '#6b7280', marginBottom: 10, marginLeft: 6 },
-  
+
   card: { borderRadius: 16, overflow: 'hidden' },
   emptyCard: { borderRadius: 16, padding: 30, alignItems: 'center', justifyContent: 'center', minHeight: 120 },
 
-  hiddenBanner: { 
-    backgroundColor: '#10b98133', 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    paddingVertical: 8, 
-    borderRadius: 20, 
+  hiddenBanner: {
+    backgroundColor: '#10b98133',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: 20,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#10b981'
@@ -542,7 +532,7 @@ const styles = StyleSheet.create({
   checkBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
   emojiInputRow: { marginTop: 20, alignItems: 'center', gap: 5 },
   emojiInput: { backgroundColor: '#1e1e1e', color: '#fff', fontSize: 24, textAlign: 'center', width: 60, height: 60, borderRadius: 12 },
-  
+
   miniTogglePill: { flexDirection: 'row', borderRadius: 20, padding: 2 },
   miniToggleBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 18 },
 });

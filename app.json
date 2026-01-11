@@ -17,11 +17,13 @@
       }
     },
     "android": {
-      "package": "com.InSpend.app",
+      "package": "com.inspend.app",
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "READ_SMS",
-        "RECEIVE_SMS"
+        "RECEIVE_SMS",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -50,11 +52,18 @@
           }
         }
       ],
-      "./expo-plugins/with-sms-android.js"
+      "./expo-plugins/with-sms-android.js",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fd8dfae0-e156-4a61-9b93-b3a7d4d0ed66"
+      }
     }
   }
 }

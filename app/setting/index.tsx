@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { collection, doc, getDoc, getDocs, setDoc, writeBatch, updateDoc } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,9 +23,9 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
-import { CsvService } from "../utils/CsvService";
 import { AICategorizationService } from "../utils/AICategorizationService";
-import { checkSmsPermissions, requestSmsPermissions, syncSmsTransactions } from "../utils/SmsService";
+import { CsvService } from "../utils/CsvService";
+import { checkSmsPermissions, requestSmsPermissions, resetSmsCache, syncSmsTransactions } from "../utils/SmsService";
 
 import ConfettiCannon from 'react-native-confetti-cannon';
 
@@ -91,7 +91,7 @@ const SettingRow = ({ icon, color, label, value, isSwitch, switchValue, onToggle
 
 export default function SettingScreen() {
   const router = useRouter();
-  const { theme, dark } = useTheme();
+  const { theme, dark, toggleTheme } = useTheme();
   const { userData, refreshData } = useData();
   const confettiRef = useRef<any>(null);
 
@@ -136,7 +136,21 @@ export default function SettingScreen() {
     setSmsPermissionGranted(granted);
   };
 
-  // --- 📤 EXPORT CSV ---
+  const toggleThemeSwitch = (value: boolean) => {
+    if (value !== dark) toggleTheme();
+
+    const mode = value ? "dark" : "light";
+    Promise.all([
+      AsyncStorage.setItem("@inspend_theme", mode),
+      (async () => {
+        const user = auth.currentUser;
+        if (user) {
+          await setDoc(doc(db, "users", user.uid), { theme: mode }, { merge: true });
+        }
+      })()
+    ]).catch(e => console.log("Theme background sync failed:", e));
+  };
+
   const exportCSV = async () => {
     try {
       const user = auth.currentUser;
@@ -168,7 +182,6 @@ export default function SettingScreen() {
     }
   };
 
-  // --- 📥 IMPORT CSV ---
   const handleImportCSV = () => {
     Alert.alert(
       "CSV Import Guide",
@@ -196,10 +209,9 @@ export default function SettingScreen() {
       const csvContent = await FileSystem.readAsStringAsync(uri, { encoding: "utf8" });
 
       const userCategories = [...(userData.categories || []), ...(userData.incomeCategories || [])];
-      
+
       const { transactions, newCategories } = CsvService.parseCSV(csvContent, userCategories);
 
-      // --- AI BATCH PROCESSING ---
       const uncertain = transactions
         .map((t, i) => ({ ...t, originalIndex: i }))
         .filter(t => t.category.label === "General");
@@ -208,28 +220,27 @@ export default function SettingScreen() {
         setLoadingText(`AI Categorizing (${uncertain.length})...`);
         const inputs = uncertain.map(t => ({ description: t.note, amount: t.amount }));
         const predictedLabels = await AICategorizationService.predictCategoriesBatch(inputs, [...userCategories, ...newCategories]);
-        
+
         uncertain.forEach((t, i) => {
-            const label = predictedLabels[i];
-            if (label && label !== "General") {
-                const cat = [...userCategories, ...newCategories].find(c => c.label === label);
-                if (cat) {
-                    transactions[t.originalIndex].category = cat;
-                }
+          const label = predictedLabels[i];
+          if (label && label !== "General") {
+            const cat = [...userCategories, ...newCategories].find(c => c.label === label);
+            if (cat) {
+              transactions[t.originalIndex].category = cat;
             }
+          }
         });
       }
 
-      // Add New Categories to User Profile
       if (newCategories.length > 0) {
         const user = auth.currentUser;
         if (user) {
-             const userRef = doc(db, "users", user.uid);
-             const currentExpenses = userData.categories || [];
-             
-             await updateDoc(userRef, {
-                 categories: [...currentExpenses, ...newCategories]
-             });
+          const userRef = doc(db, "users", user.uid);
+          const currentExpenses = userData.categories || [];
+
+          await updateDoc(userRef, {
+            categories: [...currentExpenses, ...newCategories]
+          });
         }
       }
 
@@ -246,12 +257,12 @@ export default function SettingScreen() {
 
       await batch.commit();
       await refreshData();
-      
+
       setLoading(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
+
       if (confettiRef.current) confettiRef.current.start();
-      
+
       setTimeout(() => {
         Alert.alert("Success", `Imported ${transactions.length} transactions!`);
       }, 500);
@@ -371,25 +382,44 @@ export default function SettingScreen() {
     if (!user) return;
     try {
       setLoading(true);
-      setLoadingText("Erasing Data...");
+      setLoadingText("Wiping everything...");
+
+      const batch = writeBatch(db);
+
+      // 1. Delete Transactions
       const transactionsRef = collection(db, "users", user.uid, "transactions");
       const snapshot = await getDocs(transactionsRef);
-      if (snapshot.empty) {
-        setLoading(false);
-        Alert.alert("Empty", "No transactions to delete.");
-        return;
-      }
-      const batch = writeBatch(db);
       snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
+
+      // 2. Reset User Profile (Keep Auth, Wipe Data)
+      const userRef = doc(db, "users", user.uid);
+      batch.set(userRef, {
+        displayName: user.displayName || userData?.displayName || "User",
+        email: user.email,
+        createdAt: new Date().toISOString(),
+        onboardingComplete: false, // 👈 Triggers Onboarding Flow
+        // Clear all other preferences
+      });
+
       await batch.commit();
 
-      await refreshData();
+      // 3. Clear Local Device Cache
+      await AsyncStorage.clear();
+      // Reset SMS Cache
+      resetSmsCache();
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Success", "All transaction history has been permanently deleted.");
+
+      // 4. Restart
+      Alert.alert("Reset Complete", "Your account is fresh. Starting over...", [
+        { text: "Let's Go", onPress: () => router.replace("/onboarding") }
+      ]);
+
     } catch (error) {
-      Alert.alert("Error", "Could not erase data.");
+      console.error(error);
+      Alert.alert("Error", "Could not fully erase data.");
     } finally {
       setLoading(false);
     }
@@ -416,7 +446,6 @@ export default function SettingScreen() {
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
 
-        {/* PROFILE */}
         <TouchableOpacity style={[styles.profileCard, { backgroundColor: theme.card }]} onPress={() => router.push("/setting/profilemanagement")} activeOpacity={0.9}>
           <View style={[styles.avatar, { backgroundColor: theme.accent, shadowColor: theme.accent }]}>
             <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
@@ -431,16 +460,21 @@ export default function SettingScreen() {
           <Ionicons name="chevron-forward" size={24} color={theme.muted} style={{ opacity: 0.3 }} />
         </TouchableOpacity>
 
-        {/* 1. GENERAL PREFERENCES */}
         <Text style={[styles.sectionHeader, { color: theme.muted }]}>GENERAL</Text>
         <View style={[styles.sectionContainer, { backgroundColor: theme.card }]}>
-          <SettingRow icon="moon" color="#6366f1" label="Appearance" value={dark ? "Dark" : "Light"} onPress={() => router.push("/setting/theme")} />
+          <SettingRow
+            icon="moon"
+            color="#6366f1"
+            label="Dark Mode"
+            isSwitch
+            switchValue={dark}
+            onToggle={toggleThemeSwitch}
+          />
           <SettingRow icon="finger-print" color="#8b5cf6" label="Biometric Lock" isSwitch switchValue={biometricEnabled} onToggle={toggleBiometric} />
           <SettingRow icon="notifications" color="#f59e0b" label="Notifications" onPress={() => router.push("/setting/notifications")} />
           <SettingRow icon="phone-portrait" color="#06b6d4" label="Haptics" value={hapticsPref} onPress={() => router.push("/setting/haptics")} isLast />
         </View>
 
-        {/* 2. CONFIGURATION */}
         <Text style={[styles.sectionHeader, { color: theme.muted }]}>CONFIGURATION</Text>
         <View style={[styles.sectionContainer, { backgroundColor: theme.card }]}>
           <SettingRow icon="wallet" color="#22c55e" label="Income Tracking" isSwitch switchValue={incomeTracking} onToggle={toggleIncomeTracking} />
@@ -459,7 +493,6 @@ export default function SettingScreen() {
           />
         </View>
 
-        {/* 2.5 SMS SYNC */}
         {smsPermissionGranted && (
           <>
             <Text style={[styles.sectionHeader, { color: theme.muted }]}>SMS SYNC</Text>
@@ -475,7 +508,6 @@ export default function SettingScreen() {
           </>
         )}
 
-        {/* 3. EXPORT & DATA (JSON Removed) */}
         <Text style={[styles.sectionHeader, { color: theme.muted }]}>DATA MANAGEMENT</Text>
         <View style={[styles.sectionContainer, { backgroundColor: theme.card }]}>
           <SettingRow icon="download-outline" color="#8b5cf6" label="Import Data" onPress={handleImportCSV} />
@@ -483,7 +515,6 @@ export default function SettingScreen() {
           <SettingRow icon="trash" color="#ef4444" label="Erase Data" onPress={handleErase} isLast isDestructive />
         </View>
 
-        {/* 4. ABOUT */}
         <Text style={[styles.sectionHeader, { color: theme.muted }]}>ABOUT</Text>
         <View style={[styles.sectionContainer, { backgroundColor: theme.card }]}>
           <SettingRow icon="shield-checkmark" color="#64748b" label="Privacy Policy" onPress={() => { }} />

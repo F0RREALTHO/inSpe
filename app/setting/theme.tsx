@@ -16,7 +16,6 @@ export default function ThemeSettings(): JSX.Element {
   const router = useRouter();
 
   const applyTheme = async (mode: "light" | "dark") => {
-    setLoading(true);
     try {
       if (mode === "dark" && !dark) toggleTheme();
       if (mode === "light" && dark) toggleTheme();
@@ -28,25 +27,20 @@ export default function ThemeSettings(): JSX.Element {
         await setDoc(doc(db, "users", user.uid), { theme: mode }, { merge: true });
       }
 
-      setTimeout(() => {
-        setLoading(false);
-        router.back();
-      }, 300);
+      router.back();
     } catch (e) {
       console.log("Theme save error:", e);
-      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]}>
-      
-      {/* 1. Custom Header for Consistency */}
+
       <View style={styles.header}>
-        <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={[styles.roundBtn, { backgroundColor: theme.card }]}
-            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.roundBtn, { backgroundColor: theme.card }]}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Ionicons name="chevron-back" size={24} color={theme.accent} />
         </TouchableOpacity>
@@ -59,19 +53,17 @@ export default function ThemeSettings(): JSX.Element {
 
         <View style={{ height: 20 }} />
 
-        {/* LIGHT MODE OPTION */}
         <TouchableOpacity
           activeOpacity={0.9}
           style={[
-            styles.option, 
-            { 
-                backgroundColor: !dark ? theme.accent : theme.card,
-                borderColor: !dark ? theme.accent : theme.border,
-                // Glow effect for active item
-                shadowColor: !dark ? theme.accent : "#000",
-                shadowOpacity: !dark ? 0.4 : 0,
-                shadowRadius: 10,
-                elevation: !dark ? 5 : 0
+            styles.option,
+            {
+              backgroundColor: !dark ? theme.accent : theme.card,
+              borderColor: !dark ? theme.accent : theme.border,
+              shadowColor: !dark ? theme.accent : "#000",
+              shadowOpacity: !dark ? 0.4 : 0,
+              shadowRadius: 10,
+              elevation: !dark ? 5 : 0
             }
           ]}
           onPress={() => applyTheme("light")}
@@ -83,20 +75,18 @@ export default function ThemeSettings(): JSX.Element {
           {!dark && <Ionicons name="checkmark-circle" size={22} color="#fff" />}
         </TouchableOpacity>
 
-        {/* DARK MODE OPTION */}
         <TouchableOpacity
           activeOpacity={0.9}
           style={[
-            styles.option, 
-            { 
-                backgroundColor: dark ? theme.accent : theme.card, 
-                marginTop: 16,
-                borderColor: dark ? theme.accent : theme.border,
-                // Glow effect for active item
-                shadowColor: dark ? theme.accent : "#000",
-                shadowOpacity: dark ? 0.4 : 0,
-                shadowRadius: 10,
-                elevation: dark ? 5 : 0
+            styles.option,
+            {
+              backgroundColor: dark ? theme.accent : theme.card,
+              marginTop: 16,
+              borderColor: dark ? theme.accent : theme.border,
+              shadowColor: dark ? theme.accent : "#000",
+              shadowOpacity: dark ? 0.4 : 0,
+              shadowRadius: 10,
+              elevation: dark ? 5 : 0
             }
           ]}
           onPress={() => applyTheme("dark")}
@@ -119,7 +109,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingVertical: 10 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
   roundBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: "center", alignItems: 'center' },
-  
+
   subtitle: { marginTop: 0, fontSize: 14, paddingHorizontal: 4 },
   option: {
     padding: 18,

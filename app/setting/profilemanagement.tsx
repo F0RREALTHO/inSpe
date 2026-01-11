@@ -5,18 +5,18 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Easing,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Easing,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth, db } from "../../firebaseConfig";
@@ -60,7 +60,6 @@ export default function ProfileManagement(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
 
-  // --- FORM STATE ---
   const [displayName, setDisplayName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [incomeNumber, setIncomeNumber] = useState<number | null>(null);
@@ -76,15 +75,12 @@ export default function ProfileManagement(): JSX.Element {
   const [customGoal, setCustomGoal] = useState<string>("");
   const [personality, setPersonality] = useState<string | null>(null);
 
-  // --- DIRTY CHECKING ---
   const [initialData, setInitialData] = useState<any>(null);
-  const slideAnim = useRef(new Animated.Value(300)).current; 
+  const slideAnim = useRef(new Animated.Value(300)).current;
 
-  // Dynamic Theme Colors
-  const inputBg = theme.inputBg || theme.card; 
+  const inputBg = theme.inputBg || theme.card;
   const border = theme.border || "rgba(255,255,255,0.1)";
 
-  // 1. REAL-TIME LISTENER
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) {
@@ -94,89 +90,86 @@ export default function ProfileManagement(): JSX.Element {
     setEmail(user.email ?? "");
 
     const unsub = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data();
+      if (docSnap.exists()) {
+        const data = docSnap.data();
 
-            if (!saving) {
-                setDisplayName(data.displayName ?? "");
-                
-                const incNum = typeof data.income === "number" ? data.income : null;
-                setIncomeNumber(incNum);
-                setIncomeDisplay(incNum ? formatCurrency(incNum) : "");
+        if (!saving) {
+          setDisplayName(data.displayName ?? "");
 
-                const limNum = typeof data.monthlyLimit === "number" ? data.monthlyLimit : null;
-                setMonthlyLimitNumber(limNum);
-                setMonthlyLimitDisplay(limNum ? formatCurrency(limNum) : "");
+          const incNum = typeof data.income === "number" ? data.income : null;
+          setIncomeNumber(incNum);
+          setIncomeDisplay(incNum ? formatCurrency(incNum) : "");
 
-                setBudgetStyle(data.budgetStyle ?? null);
-                setNotification(data.notifications ?? null); // Fixed key to 'notifications'
+          const limNum = typeof data.monthlyLimit === "number" ? data.monthlyLimit : null;
+          setMonthlyLimitNumber(limNum);
+          setMonthlyLimitDisplay(limNum ? formatCurrency(limNum) : "");
 
-                setInsights(data.insights ?? null);
-                
-                // Custom Goal Logic
-                const savedGoalValue = data.savingGoal;
-                const isStandardGoal = SAVING_GOALS.some(g => g.id === savedGoalValue);
+          setBudgetStyle(data.budgetStyle ?? null);
+          setNotification(data.notifications ?? null);
 
-                if (isStandardGoal) {
-                    setSavingGoal(savedGoalValue);
-                    setCustomGoal("");
-                } else if (savedGoalValue) {
-                    setSavingGoal("Custom");
-                    setCustomGoal(savedGoalValue);
-                } else {
-                    setSavingGoal(null);
-                    setCustomGoal("");
-                }
+          setInsights(data.insights ?? null);
 
-                setPersonality(data.personality ?? null);
-                setCategories(data.categories || []);
+          const savedGoalValue = data.savingGoal;
+          const isStandardGoal = SAVING_GOALS.some(g => g.id === savedGoalValue);
 
-                // Update Baseline for Dirty Check
-                setInitialData({
-                    displayName: data.displayName ?? "",
-                    income: incNum,
-                    monthlyLimit: limNum,
-                    budgetStyle: data.budgetStyle ?? null,
-                    notification: data.notifications ?? null, 
-                    insights: data.insights ?? null,
-                    savingGoal: isStandardGoal ? savedGoalValue : (savedGoalValue ? "Custom" : null),
-                    customGoal: isStandardGoal ? "" : (savedGoalValue || ""),
-                    personality: data.personality ?? null
-                });
-            }
-            setLoading(false);
+          if (isStandardGoal) {
+            setSavingGoal(savedGoalValue);
+            setCustomGoal("");
+          } else if (savedGoalValue) {
+            setSavingGoal("Custom");
+            setCustomGoal(savedGoalValue);
+          } else {
+            setSavingGoal(null);
+            setCustomGoal("");
+          }
+
+          setPersonality(data.personality ?? null);
+          setCategories(data.categories || []);
+
+          setInitialData({
+            displayName: data.displayName ?? "",
+            income: incNum,
+            monthlyLimit: limNum,
+            budgetStyle: data.budgetStyle ?? null,
+            notification: data.notifications ?? null,
+            insights: data.insights ?? null,
+            savingGoal: isStandardGoal ? savedGoalValue : (savedGoalValue ? "Custom" : null),
+            customGoal: isStandardGoal ? "" : (savedGoalValue || ""),
+            personality: data.personality ?? null
+          });
         }
-    }, (error) => {
-        console.error("Listener Error:", error);
         setLoading(false);
+      }
+    }, (error) => {
+      console.error("Listener Error:", error);
+      setLoading(false);
     });
 
-    return () => unsub(); 
+    return () => unsub();
   }, []);
 
-  // 2. CHECK FOR CHANGES (Button Animation)
   useEffect(() => {
     if (!initialData) return;
 
     const current = {
-        displayName,
-        income: incomeNumber,
-        monthlyLimit: monthlyLimitNumber,
-        budgetStyle,
-        notification, 
-        insights,
-        savingGoal,
-        customGoal,
-        personality
+      displayName,
+      income: incomeNumber,
+      monthlyLimit: monthlyLimitNumber,
+      budgetStyle,
+      notification,
+      insights,
+      savingGoal,
+      customGoal,
+      personality
     };
 
     const isDifferent = JSON.stringify(current) !== JSON.stringify(initialData);
 
     Animated.timing(slideAnim, {
-        toValue: isDifferent ? 0 : 300, 
-        duration: 350,
-        easing: Easing.out(Easing.back(1.5)), 
-        useNativeDriver: true
+      toValue: isDifferent ? 0 : 300,
+      duration: 350,
+      easing: Easing.out(Easing.back(1.5)),
+      useNativeDriver: true
     }).start();
 
   }, [displayName, incomeNumber, monthlyLimitNumber, budgetStyle, notification, insights, savingGoal, customGoal, personality, initialData]);
@@ -198,8 +191,8 @@ export default function ProfileManagement(): JSX.Element {
 
   const validateAndSave = async () => {
     if (!displayName.trim()) return Alert.alert("Name required", "Display name cannot be empty.");
-    
-    setSaving(true); 
+
+    setSaving(true);
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("Not authenticated");
@@ -215,7 +208,7 @@ export default function ProfileManagement(): JSX.Element {
         notifications: notification ?? null, // Fixed key
         insights: insights ?? null,
         savingGoal: finalSavingGoal ?? null,
-        customGoal: (savingGoal === "Custom" ? customGoal.trim() : "") ?? "", 
+        customGoal: (savingGoal === "Custom" ? customGoal.trim() : "") ?? "",
         personality: personality ?? null,
         updatedAt: new Date().toISOString(),
       };
@@ -228,13 +221,13 @@ export default function ProfileManagement(): JSX.Element {
         income: incomeNumber ?? null,
         monthlyLimit: monthlyLimitNumber ?? null,
         budgetStyle: budgetStyle ?? null,
-        notification: notification ?? null, 
+        notification: notification ?? null,
         insights: insights ?? null,
-        savingGoal, 
+        savingGoal,
         customGoal: customGoal.trim(),
         personality: personality ?? null
-      }); 
-      
+      });
+
       Animated.timing(slideAnim, {
         toValue: 300,
         duration: 300,
@@ -245,7 +238,7 @@ export default function ProfileManagement(): JSX.Element {
       console.error(err);
       Alert.alert("Save failed", err.message);
     } finally {
-      setSaving(false); 
+      setSaving(false);
     }
   };
 
@@ -265,8 +258,7 @@ export default function ProfileManagement(): JSX.Element {
           <Text style={[styles.sub, { color: theme.muted }]}>Edit your account & budgeting preferences</Text>
 
           <View style={[styles.card, { backgroundColor: theme.card, borderColor: border }]}>
-            
-            {/* NAME & EMAIL */}
+
             <Text style={[styles.label, { color: theme.muted }]}>Display name</Text>
             <TextInput
               style={[styles.input, { backgroundColor: inputBg, color: theme.text, borderColor: border }]}
@@ -277,17 +269,17 @@ export default function ProfileManagement(): JSX.Element {
             />
 
             <Text style={[styles.label, { color: theme.muted, marginTop: 12 }]}>Email (read-only)</Text>
-            <TextInput 
-              style={[styles.input, { backgroundColor: inputBg, color: theme.text, borderColor: border }]} 
-              value={email} 
-              editable={false} 
+            <TextInput
+              style={[styles.input, { backgroundColor: inputBg, color: theme.text, borderColor: border }]}
+              value={email}
+              editable={false}
             />
 
-            <TouchableOpacity 
-                onPress={() => sendPasswordResetEmail(auth, email)}
-                style={{ alignSelf: 'flex-end', marginTop: 8, padding: 4 }}
+            <TouchableOpacity
+              onPress={() => sendPasswordResetEmail(auth, email)}
+              style={{ alignSelf: 'flex-end', marginTop: 8, padding: 4 }}
             >
-                <Text style={{ color: theme.accent, fontWeight: "700", fontSize: 13 }}>Change Password</Text>
+              <Text style={{ color: theme.accent, fontWeight: "700", fontSize: 13 }}>Change Password</Text>
             </TouchableOpacity>
 
             {/* INCOME & LIMIT */}
@@ -319,20 +311,19 @@ export default function ProfileManagement(): JSX.Element {
               />
             </View>
 
-            {/* BUDGET STYLE */}
             <Text style={[styles.label, { color: theme.muted, marginTop: 12 }]}>Budget style</Text>
             {BUDGET_STYLES.map((b) => {
               const active = budgetStyle === b.id;
               return (
-                <TouchableOpacity 
-                  key={b.id} 
-                  style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]} 
+                <TouchableOpacity
+                  key={b.id}
+                  style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]}
                   onPress={() => setBudgetStyle(b.id)}
                 >
                   <Text style={{ fontSize: 24, marginRight: 12 }}>{b.emoji}</Text>
                   <View style={{ flex: 1 }}>
-                      <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{b.label}</Text>
-                      <Text style={{ color: theme.muted, fontSize: 12 }}>{b.desc}</Text>
+                    <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{b.label}</Text>
+                    <Text style={{ color: theme.muted, fontSize: 12 }}>{b.desc}</Text>
                   </View>
                   {active && <Ionicons name="checkmark-circle" size={24} color={theme.accent} />}
                 </TouchableOpacity>
@@ -352,41 +343,39 @@ export default function ProfileManagement(): JSX.Element {
               <Ionicons name="chevron-forward" size={20} color={theme.muted} />
             </TouchableOpacity>
 
-            {/* INSIGHTS */}
             <Text style={[styles.label, { color: theme.muted, marginTop: 12 }]}>Insights</Text>
             {INSIGHTS.map((i) => {
               const active = insights === i.id;
               return (
-                <TouchableOpacity 
-                  key={i.id} 
-                  style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]} 
+                <TouchableOpacity
+                  key={i.id}
+                  style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]}
                   onPress={() => setInsights(i.id)}
                 >
                   <Text style={{ fontSize: 24, marginRight: 12 }}>{i.emoji}</Text>
                   <View style={{ flex: 1 }}>
-                      <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{i.label}</Text>
-                      <Text style={{ color: theme.muted, fontSize: 12 }}>{i.desc}</Text>
+                    <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{i.label}</Text>
+                    <Text style={{ color: theme.muted, fontSize: 12 }}>{i.desc}</Text>
                   </View>
                   {active && <Ionicons name="checkmark-circle" size={24} color={theme.accent} />}
                 </TouchableOpacity>
               );
             })}
 
-            {/* SAVING GOAL */}
             <Text style={[styles.label, { color: theme.muted, marginTop: 12 }]}>Saving goal</Text>
             <View style={{ gap: 8 }}>
               {SAVING_GOALS.map((g) => {
                 const active = savingGoal === g.id;
                 return (
-                  <TouchableOpacity 
-                    key={g.id} 
-                    style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]} 
+                  <TouchableOpacity
+                    key={g.id}
+                    style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]}
                     onPress={() => { setSavingGoal(g.id); if (g.id !== "Custom") setCustomGoal(""); }}
                   >
                     <Text style={{ fontSize: 24, marginRight: 12 }}>{g.emoji}</Text>
                     <View style={{ flex: 1 }}>
-                        <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{g.label}</Text>
-                        <Text style={{ color: theme.muted, fontSize: 12 }}>{g.desc}</Text>
+                      <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{g.label}</Text>
+                      <Text style={{ color: theme.muted, fontSize: 12 }}>{g.desc}</Text>
                     </View>
                     {active && <Ionicons name="checkmark-circle" size={24} color={theme.accent} />}
                   </TouchableOpacity>
@@ -395,12 +384,12 @@ export default function ProfileManagement(): JSX.Element {
             </View>
 
             {savingGoal === "Custom" && (
-              <TextInput 
-                style={[styles.input, { backgroundColor: inputBg, color: theme.text, borderColor: border, marginTop: 10 }]} 
-                placeholder="Type your custom goal" 
-                placeholderTextColor={theme.muted} 
-                value={customGoal} 
-                onChangeText={setCustomGoal} 
+              <TextInput
+                style={[styles.input, { backgroundColor: inputBg, color: theme.text, borderColor: border, marginTop: 10 }]}
+                placeholder="Type your custom goal"
+                placeholderTextColor={theme.muted}
+                value={customGoal}
+                onChangeText={setCustomGoal}
               />
             )}
 
@@ -409,15 +398,15 @@ export default function ProfileManagement(): JSX.Element {
             {PERSONALITIES.map((p) => {
               const active = personality === p.id;
               return (
-                <TouchableOpacity 
-                  key={p.id} 
-                  style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]} 
+                <TouchableOpacity
+                  key={p.id}
+                  style={[styles.rowCard, { backgroundColor: theme.card, borderColor: active ? theme.accent : border, borderWidth: active ? 2 : 1 }]}
                   onPress={() => setPersonality(p.id)}
                 >
                   <Text style={{ fontSize: 24, marginRight: 12 }}>{p.emoji}</Text>
                   <View style={{ flex: 1 }}>
-                      <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{p.label}</Text>
-                      <Text style={{ color: theme.muted, fontSize: 12 }}>{p.desc}</Text>
+                    <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16 }}>{p.label}</Text>
+                    <Text style={{ color: theme.muted, fontSize: 12 }}>{p.desc}</Text>
                   </View>
                   {active && <Ionicons name="checkmark-circle" size={24} color={theme.accent} />}
                 </TouchableOpacity>
@@ -426,22 +415,21 @@ export default function ProfileManagement(): JSX.Element {
           </View>
         </ScrollView>
 
-        {/* ✨ FLOATING SAVE BUTTON ✨ */}
         <Animated.View style={[styles.floatingContainer, { transform: [{ translateY: slideAnim }] }]}>
-            <TouchableOpacity 
-                style={[styles.floatingBtn, { backgroundColor: theme.accent }]} 
-                onPress={validateAndSave}
-                disabled={saving}
-            >
-                {saving ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <>
-                        <Ionicons name="checkmark-circle" size={20} color="#fff" style={{marginRight: 8}} />
-                        <Text style={styles.floatingText}>Save Changes</Text>
-                    </>
-                )}
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.floatingBtn, { backgroundColor: theme.accent }]}
+            onPress={validateAndSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.floatingText}>Save Changes</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </Animated.View>
 
       </KeyboardAvoidingView>
@@ -460,11 +448,10 @@ const styles = StyleSheet.create({
   prefix: { fontSize: 18, fontWeight: "900", paddingHorizontal: 8 },
   inputFlex: { flex: 1, borderRadius: 12, padding: 12, borderWidth: 1 },
   rowCard: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 12, borderRadius: 12, marginTop: 8 },
-  
-  // Floating Button Styles
+
   floatingContainer: {
     position: 'absolute',
-    bottom: 40, 
+    bottom: 40,
     left: 20,
     right: 20,
     alignItems: 'center',
@@ -482,7 +469,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     elevation: 8,
-    width: '100%', 
+    width: '100%',
   },
   floatingText: {
     color: "#fff",

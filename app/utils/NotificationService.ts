@@ -36,7 +36,6 @@ async function loadNotifications() {
   }
 }
 
-// Try to set a notification handler if possible (best-effort)
 loadNotifications().then((Notifications) => {
   try {
     Notifications.setNotificationHandler?.({
