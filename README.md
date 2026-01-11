@@ -135,5 +135,5 @@ Finance doesn't have to be ugly.
     ```
 
 <p align="center">
-  <small>Built with ❤️ & ☕ by Kartik</small>
+  <small>Built with ❤️ & ☕</small>
 </p>
