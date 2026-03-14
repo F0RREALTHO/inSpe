@@ -107,6 +107,14 @@ Finance doesn't have to be ugly.
 *   **State**: React Context + optimistic updates
 *   **Storage**: MMKV / AsyncStorage for instant load times
 
+## 📦 Download the App
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1kMce5tKifu0Oo1H54Qoh-5qjPcV7QomQ/view">
+    <img src="https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android">
+  </a>
+</p>
+
 ## 🚀 Getting Started
 
 ### Prerequisites
