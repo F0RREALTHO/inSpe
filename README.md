@@ -3,6 +3,16 @@
 ## 📱 App Overview
 **InSpend** is a feature-rich, local-first personal finance tracker built with **React Native (Expo)** and **Firebase**. It emphasizes speed, visual feedback, and automation (SMS scanning, AI categorization) to make expense tracking effortless.
 
+## 📦 Download the App
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1kMce5tKifu0Oo1H54Qoh-5qjPcV7QomQ/view">
+    <img src="https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android">
+  </a>
+</p>
+
+---
+
 ## 🛡️ Financial Defense System
 We use behavioral psychology to stop you from going broke.
 *   **🔒 Impulse Control & Goal Locking**: Savings goals are **LOCKED** inside a vault. You cannot spend that money unless you strictly "Unlock" it (adding friction to impulse buys).
@@ -107,13 +117,7 @@ Finance doesn't have to be ugly.
 *   **State**: React Context + optimistic updates
 *   **Storage**: MMKV / AsyncStorage for instant load times
 
-## 📦 Download the App
 
-<p align="center">
-  <a href="https://drive.google.com/file/d/1kMce5tKifu0Oo1H54Qoh-5qjPcV7QomQ/view">
-    <img src="https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android">
-  </a>
-</p>
 
 ## 🚀 Getting Started
 
