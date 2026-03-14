@@ -133,6 +133,17 @@ Finance doesn't have to be ugly.
     ```bash
     npx expo start
     ```
+---
+
+## 👨‍💻 Creators
+
+<p>
+  <a href="https://github.com/Shree-Pastagia"><b>Shree Pastagia</b></a>  
+  &nbsp;•&nbsp;  
+  <a href="https://github.com/F0RREALTHO"><b>Kartikeya Aryam</b></a>
+</p>
+
+---
 
 <p align="center">
   <small>Built with ❤️ & ☕</small>
