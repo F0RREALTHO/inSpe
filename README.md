@@ -6,7 +6,7 @@
 ## 📦 Download the App
 
 <p align="center">
-  <a href="https://drive.google.com/file/d/1kMce5tKifu0Oo1H54Qoh-5qjPcV7QomQ/view">
+  <a href="https://drive.google.com/file/d/1_9Wc1msZO2oVGC5zyr3AdTz_8VPpS-A1/view?usp=drive_link">
     <img src="https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android">
   </a>
 </p>
